@@ -1,0 +1,162 @@
+type Mutation {
+  createAlbum(input: CreateAlbumInput!): Album
+  updateAlbum(input: UpdateAlbumInput!): Album
+  deleteAlbum(input: DeleteAlbumInput!): Album
+  createPhoto(input: CreatePhotoInput!): Photo
+  updatePhoto(input: UpdatePhotoInput!): Photo
+  deletePhoto(input: DeletePhotoInput!): Photo
+}
+
+type Query {
+  getAlbum(id: ID!): Album
+  listAlbums(filter: ModelAlbumFilterInput, limit: Int, nextToken: String): ModelAlbumConnection
+  getPhoto(id: ID!): Photo
+  listPhotos(filter: ModelPhotoFilterInput, limit: Int, nextToken: String): ModelPhotoConnection
+}
+
+type Subscription {
+  onCreateAlbum: Album @aws_subscribe(mutations: ["createAlbum"])
+  onUpdateAlbum: Album @aws_subscribe(mutations: ["updateAlbum"])
+  onDeleteAlbum: Album @aws_subscribe(mutations: ["deleteAlbum"])
+  onCreatePhoto: Photo @aws_subscribe(mutations: ["createPhoto"])
+  onUpdatePhoto: Photo @aws_subscribe(mutations: ["updatePhoto"])
+  onDeletePhoto: Photo @aws_subscribe(mutations: ["deletePhoto"])
+}
+
+type Album {
+  id: ID!
+  name: String!
+  owner: String!
+  photos(filter: ModelPhotoFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPhotoConnection
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+type ModelAlbumConnection {
+  items: [Album]
+  nextToken: String
+}
+
+input ModelStringFilterInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+}
+
+input ModelIDFilterInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+}
+
+input ModelIntFilterInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  contains: Int
+  notContains: Int
+  between: [Int]
+}
+
+input ModelFloatFilterInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  contains: Float
+  notContains: Float
+  between: [Float]
+}
+
+input ModelBooleanFilterInput {
+  ne: Boolean
+  eq: Boolean
+}
+
+input ModelAlbumFilterInput {
+  id: ModelIDFilterInput
+  name: ModelStringFilterInput
+  owner: ModelStringFilterInput
+  and: [ModelAlbumFilterInput]
+  or: [ModelAlbumFilterInput]
+  not: ModelAlbumFilterInput
+}
+
+input CreateAlbumInput {
+  name: String!
+  owner: String!
+}
+
+input UpdateAlbumInput {
+  id: ID!
+  name: String
+  owner: String
+}
+
+input DeleteAlbumInput {
+  id: ID
+}
+
+type Photo {
+  id: ID!
+  album: Album
+  bucket: String!
+  fullsize: PhotoS3Info!
+  thumbnail: PhotoS3Info!
+}
+
+type ModelPhotoConnection {
+  items: [Photo]
+  nextToken: String
+}
+
+input ModelPhotoFilterInput {
+  id: ModelIDFilterInput
+  bucket: ModelStringFilterInput
+  and: [ModelPhotoFilterInput]
+  or: [ModelPhotoFilterInput]
+  not: ModelPhotoFilterInput
+}
+
+input CreatePhotoInput {
+  bucket: String!
+  photoAlbumId: ID
+}
+
+input UpdatePhotoInput {
+  id: ID!
+  bucket: String
+  photoAlbumId: ID
+}
+
+input DeletePhotoInput {
+  id: ID
+}
+
+type PhotoS3Info {
+  key: String!
+  width: Int!
+  height: Int!
+}

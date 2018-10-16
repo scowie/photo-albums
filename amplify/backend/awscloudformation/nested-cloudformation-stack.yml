@@ -127,6 +127,25 @@
 					"authSelections": "identityPoolAndUserPool"
 				}
 			}
+		},
+		"apiphotoalbums": {
+			"Type": "AWS::CloudFormation::Stack",
+			"Properties": {
+				"TemplateURL": "https://s3.amazonaws.com/photoalbums-20181016045910-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+				"Parameters": {
+					"AppSyncApiName": "photoalbums",
+					"AuthCognitoUserPoolId": {
+						"Fn::GetAtt": [
+							"authcognito77ae0cef",
+							"Outputs.UserPoolId"
+						]
+					},
+					"schemaGraphql": "s3://photoalbums-20181016045910-deployment/amplify-appsync-files/schema.graphql.1539681820958",
+					"ResolverBucket": "photoalbums-20181016045910-deployment",
+					"ResolverRootKey": "amplify-appsync-files",
+					"DeploymentTimestamp": "1539681820958"
+				}
+			}
 		}
 	},
 	"Outputs": {
