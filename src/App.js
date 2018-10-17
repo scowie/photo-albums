@@ -4,6 +4,8 @@ import aws_exports from './aws-exports';
 import { withAuthenticator } from 'aws-amplify-react';
 import { Connect } from 'aws-amplify-react';
 import { Grid, Header, Input, List, Segment } from 'semantic-ui-react';
+import {BrowserRouter as Router, Route, NavLink} from 'react-router-dom';
+
 Amplify.configure(aws_exports);
 
 function makeComparator(key, order='asc') {
@@ -30,6 +32,14 @@ const ListAlbums = `query ListAlbums {
   }
 }`;
 
+const GetAlbum = `query GetAlbum($id: ID!) {
+  getAlbum(id: $id) {
+    id
+    name
+  }
+}
+`;
+
 const SubscribeToNewAlbums = `
   subscription OnCreateAlbum {
     onCreateAlbum {
@@ -42,23 +52,34 @@ const SubscribeToNewAlbums = `
 class App extends Component {
   render() {
     return (
-      <Grid padded>
-        <Grid.Column>
-          <NewAlbum />
-          <AlbumsListLoader />
-        </Grid.Column>
-      </Grid>
+      <Router>
+        <Grid padded>
+          <Grid.Column>
+            <Route path="/" exact component={NewAlbum}/>
+            <Route path="/" exact component={AlbumsListLoader}/>
+            <Route
+              path="/albums/:albumId"
+              render={ () => <div><NavLink to='/'>Back to Albums list</NavLink></div> }
+            />
+            <Route
+              path="/albums/:albumId"
+              render={ props => <AlbumDetailsLoader id={props.match.params.albumId}/> }
+            />
+          </Grid.Column>
+        </Grid>
+      </Router>
     );
   }
 }
 
 class AlbumsList extends React.Component {
   albumItems() {
-        return this.props.albums.sort(makeComparator('name')).map(album =>
-            <li key={album.id}>
-                {album.name}
-            </li>);
-    }
+    return this.props.albums.sort(makeComparator('name')).map(album =>
+      <List.Item key={album.id}>
+        <NavLink to={`/albums/${album.id}`}>{album.name}</NavLink>
+      </List.Item>
+    );
+  }
 
   render() {
     return (
@@ -144,6 +165,33 @@ class NewAlbum extends Component {
         </Segment>
       )
    }
+}
+
+class AlbumDetailsLoader extends React.Component {
+  render() {
+    return (
+      <Connect query={graphqlOperation(GetAlbum, { id: this.props.id })}>
+        {({ data, loading, errors }) => {
+          if (loading) { return <div>Loading...</div>; }
+          if (errors.length > 0) { return <div>{JSON.stringify(errors)}</div>; }
+          if (!data.getAlbum) return;
+          return <AlbumDetails album={data.getAlbum} />;
+        }}
+      </Connect>
+    );
+  }
+}
+
+class AlbumDetails extends Component {
+  render() {
+    return (
+      <Segment>
+        <Header as='h3'>{this.props.album.name}</Header>
+        <p>TODO: Allow photo uploads</p>
+        <p>TODO: Show photos for this album</p>
+      </Segment>
+    )
+  }
 }
 
 export default withAuthenticator(App, {includeGreetings: true});
