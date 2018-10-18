@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import Amplify, { API, graphqlOperation } from 'aws-amplify';
+import Amplify, { API, graphqlOperation, Storage } from 'aws-amplify';
 import aws_exports from './aws-exports';
 import { withAuthenticator } from 'aws-amplify-react';
 import { Connect } from 'aws-amplify-react';
-import { Grid, Header, Input, List, Segment } from 'semantic-ui-react';
+import { Form, Grid, Header, Input, List, Segment } from 'semantic-ui-react';
 import {BrowserRouter as Router, Route, NavLink} from 'react-router-dom';
+import {v4 as uuid} from 'uuid';
 
 Amplify.configure(aws_exports);
 
@@ -187,10 +188,52 @@ class AlbumDetails extends Component {
     return (
       <Segment>
         <Header as='h3'>{this.props.album.name}</Header>
-        <p>TODO: Allow photo uploads</p>
+        <S3ImageUpload albumId={this.props.album.id}/>        
         <p>TODO: Show photos for this album</p>
       </Segment>
     )
+  }
+}
+
+
+class S3ImageUpload extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { uploading: false }
+  }
+  onChange = async (e) => {
+    const file = e.target.files[0];
+    const fileName = uuid();
+    this.setState({uploading: true});
+    const result = await Storage.put(
+      fileName, 
+      file, 
+      {
+        customPrefix: { public: 'uploads/' },
+        metadata: { albumid: this.props.albumId }
+      }
+    );
+    console.log('Uploaded file: ', result);
+    this.setState({uploading: false});
+  }
+  render() {
+    return (
+      <div>
+        <Form.Button
+          onClick={() => document.getElementById('add-image-file-input').click()}
+          disabled={this.state.uploading}
+          icon='file image outline'
+          content={ this.state.uploading ? 'Uploading...' : 'Add Image' }
+        />
+        <input
+          id='add-image-file-input'
+          type="file"
+          accept='image/*'
+          onChange={this.onChange}
+          style={{ display: 'none' }}
+        />
+      </div>
+    );
   }
 }
 
