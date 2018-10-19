@@ -1,0 +1,9 @@
+{
+  "name": "photo_processor",
+  "version": "1.0.0",
+  "description": "Our Photo Album uploads processor",
+  "main": "src/app.js",
+  "dependencies": {
+    "sharp": "^0.20.2"
+  }
+}
