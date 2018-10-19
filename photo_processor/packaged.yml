@@ -19,6 +19,8 @@ Outputs:
       - PhotoProcessorFunctionIamRole
       - Arn
 Parameters:
+  DynamoDBPhotosTableArn:
+    Type: String
   S3UserfilesBucketArn:
     Type: String
 Resources:
@@ -35,9 +37,11 @@ Resources:
     Type: AWS::Lambda::Permission
   PhotoProcessorFunction:
     Properties:
-      CodeUri: s3://cowie-cloudformation-templates/cbe5bc2a46ac7e47998edaa454fad100
+      CodeUri: s3://cowie-cloudformation-templates/517658e2cfa61774168a4a5ebbac41df
       Environment:
         Variables:
+          DYNAMODB_PHOTOS_TABLE_ARN:
+            Ref: DynamoDBPhotosTableArn
           THUMBNAIL_HEIGHT: 80
           THUMBNAIL_WIDTH: 80
       Handler: app.lambda_handler
@@ -73,5 +77,13 @@ Resources:
                 - '*'
           Version: '2012-10-17'
         PolicyName: AllPrivsForPhotoAlbumUserfilesBucket
+      - PolicyDocument:
+          Statement:
+          - Action: dynamodb:*
+            Effect: Allow
+            Resource:
+            - Ref: DynamoDBPhotosTableArn
+          Version: '2012-10-17'
+        PolicyName: AllPrivsForDynamo
     Type: AWS::IAM::Role
 Transform: AWS::Serverless-2016-10-31

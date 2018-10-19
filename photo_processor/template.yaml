@@ -6,6 +6,8 @@ Description: >
 Parameters:
     S3UserfilesBucketArn:
         Type: String
+    DynamoDBPhotosTableArn:
+        Type: String
     
 Globals:
     Function:
@@ -34,6 +36,16 @@ Resources:
                                 Effect: "Allow"
                                 Action: "s3:*"
                                 Resource: !Join ["/", [!Ref S3UserfilesBucketArn, "*"]]
+                - 
+                    PolicyName: "AllPrivsForDynamo"
+                    PolicyDocument: 
+                        Version: "2012-10-17"
+                        Statement: 
+                            -
+                                Effect: "Allow"
+                                Action: "dynamodb:*"
+                                Resource: 
+                                    - !Ref DynamoDBPhotosTableArn
     PhotoProcessorFunction:
         Type: AWS::Serverless::Function
         Properties:
@@ -45,6 +57,7 @@ Resources:
                 Variables:
                     THUMBNAIL_WIDTH: 80
                     THUMBNAIL_HEIGHT: 80
+                    DYNAMODB_PHOTOS_TABLE_ARN: !Ref DynamoDBPhotosTableArn
     BucketPermission:
         Type: AWS::Lambda::Permission
         Properties:
