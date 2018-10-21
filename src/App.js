@@ -10,7 +10,8 @@ import {
   Header,
   Input,
   List,
-  Segment
+  Segment,
+  Icon
 } from 'semantic-ui-react'
 import { BrowserRouter as Router, Route, NavLink } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
@@ -46,6 +47,7 @@ const GetAlbum = `query GetAlbum($id: ID!, $nextTokenForPhotos: String) {
   getAlbum(id: $id) {
     id
     name
+    members
     photos(sortDirection: DESC, nextToken: $nextTokenForPhotos) {
       nextToken
       items {
@@ -234,12 +236,21 @@ class AlbumDetailsLoader extends React.Component {
   }
 }
 
+
 class AlbumDetails extends Component {
   render() {
     if (!this.props.album) return 'Loading album...';
     return (
       <Segment>
         <Header as='h3'>{this.props.album.name}</Header>
+        <Segment.Group>
+          <Segment>
+            <AlbumMembers members={this.props.album.members} />
+          </Segment>
+          <Segment basic>
+            <AddUsernameToAlbum albumId={this.props.album.id} />
+          </Segment>
+        </Segment.Group>
         <S3ImageUpload albumId={this.props.album.id}/>        
         <PhotosList photos={this.props.album.photos.items} />
         {
@@ -265,12 +276,16 @@ class S3ImageUpload extends React.Component {
     const file = e.target.files[0]
     const fileName = uuid()
     this.setState({ uploading: true })
-    const result = await Storage.put(fileName, file, {
-      customPrefix: { public: 'uploads/' },
-      metadata: { albumid: this.props.albumId }
-    })
-    console.log('Uploaded file: ', result)
-    this.setState({ uploading: false })
+    try {
+      const result = await Storage.put(fileName, file, {
+        customPrefix: { public: 'uploads/' },
+        metadata: { albumid: this.props.albumId }
+      })
+      console.log('Uploaded file: ', result)
+      this.setState({ uploading: false })
+    } catch(err) {
+      console.log(err)
+    }
   }
   render () {
     return (
@@ -313,5 +328,53 @@ class PhotosList extends React.Component {
     )
   }
 }
+
+class AddUsernameToAlbum extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { username: '' };
+  }
+handleChange = (e, { name, value }) => this.setState({ [name]: value })
+handleSubmit = async (event) => {
+    event.preventDefault();
+    const AddUsernameToAlbum = `
+      mutation AddUser($username: String!, $albumId: String!) {
+          addUsernameToAlbum(username: $username, albumId: $albumId) {
+              id
+          }
+      }`;
+    const result = await API.graphql(graphqlOperation(AddUsernameToAlbum, { username: this.state.username, albumId: this.props.albumId }));
+    console.log(`Added ${this.state.username} to album id ${result.data.addUsernameToAlbum.id}`);
+    this.setState({ username: '' });
+  }
+render() {
+    return (
+      <Input
+        type='text'
+        placeholder='Username'
+        icon='user plus'
+        iconPosition='left'
+        action={{ content: 'Add', onClick: this.handleSubmit }}
+        name='username'
+        value={this.state.username}
+        onChange={this.handleChange}
+      />
+    )
+  }
+}
+
+const AlbumMembers = (props) => (
+  <div>
+    <Header as='h4'>
+      <Icon name='user circle' />
+      <Header.Content>Members</Header.Content>
+    </Header>
+    <List bulleted>
+        {props.members && props.members.map((member) => <List.Item key={member}>{member}</List.Item>)}
+    </List>
+  </div>
+);
+
+
 
 export default withAuthenticator(App, { includeGreetings: true })
