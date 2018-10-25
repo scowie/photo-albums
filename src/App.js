@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import Amplify, { API, graphqlOperation, Storage } from 'aws-amplify'
 import aws_exports from './aws-exports'
-// import { withAuthenticator } from 'aws-amplify-react'
+import { withAuthenticator } from 'aws-amplify-react'
 import { Connect } from 'aws-amplify-react'
 import {
   Divider,
@@ -16,11 +16,8 @@ import {
 import { BrowserRouter as Router, Route, NavLink } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
 import { S3Image } from 'aws-amplify-react'
-// import Authentication, { configureAmplifyAuth } from "./Authentication"
 
 Amplify.configure(aws_exports)
-
-// configureAmplifyAuth()
 
 function makeComparator (key, order = 'asc') {
   return (a, b) => {
@@ -77,26 +74,26 @@ const SubscribeToNewAlbums = `
 class App extends Component {
   render () {
     return (
-        <Router>
-          <Grid padded>
-            <Grid.Column>
-              <Route path='/' exact component={NewAlbum} />
-              <Route path='/' exact component={AlbumsListLoader} />
-              <Route
-                path='/albums/:albumId'
-                render={() => (
-                  <div><NavLink to='/'>Back to Albums list</NavLink></div>
-                )}
-              />
-              <Route
-                path='/albums/:albumId'
-                render={props => (
-                  <AlbumDetailsLoader id={props.match.params.albumId} />
-                )}
-              />
-            </Grid.Column>
-          </Grid>
-        </Router>
+      <Router>
+        <Grid padded>
+          <Grid.Column>
+            <Route path='/' exact component={NewAlbum} />
+            <Route path='/' exact component={AlbumsListLoader} />
+            <Route
+              path='/albums/:albumId'
+              render={() => (
+                <div><NavLink to='/'>Back to Albums list</NavLink></div>
+              )}
+            />
+            <Route
+              path='/albums/:albumId'
+              render={props => (
+                <AlbumDetailsLoader id={props.match.params.albumId} />
+              )}
+            />
+          </Grid.Column>
+        </Grid>
+      </Router>
     )
   }
 }
@@ -380,4 +377,4 @@ const AlbumMembers = (props) => (
 
 
 
-export default App;
+export default withAuthenticator(App, { includeGreetings: true })
