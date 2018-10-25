@@ -16,10 +16,11 @@ import {
 import { BrowserRouter as Router, Route, NavLink } from 'react-router-dom'
 import { v4 as uuid } from 'uuid'
 import { S3Image } from 'aws-amplify-react'
-import Authentication, { configureAmplifyAuth } from "./Authentication/index.js";
-configureAmplifyAuth();
+// import Authentication, { configureAmplifyAuth } from "./Authentication"
 
 Amplify.configure(aws_exports)
+
+// configureAmplifyAuth()
 
 function makeComparator (key, order = 'asc') {
   return (a, b) => {
@@ -76,7 +77,6 @@ const SubscribeToNewAlbums = `
 class App extends Component {
   render () {
     return (
-      <Authentication>
         <Router>
           <Grid padded>
             <Grid.Column>
@@ -97,7 +97,6 @@ class App extends Component {
             </Grid.Column>
           </Grid>
         </Router>
-      </Authentication>
     )
   }
 }

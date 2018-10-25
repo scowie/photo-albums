@@ -1,4 +1,4 @@
-import Amplify, { Auth, JS } from "aws-amplify";
+import Amplify, { Auth } from "aws-amplify";
 import { config } from "./config";
 
 export const INIT = "init";
@@ -26,12 +26,11 @@ export const configureAmplifyAuth = () =>
  * it will resolve the proper authStatus string
  * @param {object} user the Cognito user object
  */
-export const AuthCheckContact = ({ user }) => {
-  debugger;
+export const AuthCheckContact = user => {
   return new Promise((resolve, reject) =>
     Auth.verifiedContact(user)
       .then(data => {
-        if (!JS.isEmpty(data.verified)) {
+        if (!(Object.getOwnPropertyNames(data.verified).length === 0)) {
           resolve(SIGNED_IN);
         } else {
           user = Object.assign(user, data);
@@ -66,8 +65,10 @@ export const processUserChallenge = user => {
     // console.log("TOTP setup", challengeParam);
     return TOTP_SETUP;
   } else {
-    AuthCheckContact(user)
-      .then(authStatus => authStatus)
+    return AuthCheckContact(user)
+      .then(authStatus => {
+        return authStatus
+      })
       .catch(error => error);
   }
 };
@@ -91,14 +92,18 @@ export const processUserException = ({ code }) =>
  */
 export const AuthSignIn = (username, password) =>
   new Promise((resolve, reject) =>
-    Auth.signIn(username, password)
-      .then(user => {
-        resolve({
-          authStatus: processUserChallenge(user),
-          authData: user,
-          authError: null
-        });
-      })
+    {
+      const resp = {
+        authStatus: null,
+        authData: null,
+        authError: null
+      }
+
+      Auth.signIn(username, password)
+      .then(user => resp.authData = user)
+      .then(() => processUserChallenge(resp.authData))
+      .then(status => resp.authStatus = status)
+      .then(() => resolve(resp))
       .catch(authError => {
         reject({
           authStatus: processUserException(authError),
@@ -106,7 +111,7 @@ export const AuthSignIn = (username, password) =>
           authError
         });
       })
-  );
+    })
 
 /**
  * Registers the user into user pool and returns the Cognito session.
@@ -149,7 +154,6 @@ export const AuthSignUp = (username, password, attributes) =>
  */
 export const AuthCompleteNewPassword = (user, newPassword) => {
   return new Promise((resolve, reject) => {
-    debugger;
     Auth.completeNewPassword(
       user,
       newPassword,

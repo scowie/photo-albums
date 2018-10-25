@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import SignIn from "../SignIn";
 import SignUp from "../SignUp";
 import RequireNewPassword from "../RequireNewPassword";
+import App from "../../App"
 
 import {
   INIT,
@@ -70,8 +71,8 @@ export class Authentication extends Component {
         return <div>{VERIFY_CONTACT} - Placeholder</div>;
 
       case SIGNED_IN:
-        return this.props.children(authProps);
-
+          return <App />
+        
       default:
         return <div>No Matching State for: {this.state.authStatus}</div>;
     }

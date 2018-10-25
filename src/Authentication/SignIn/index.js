@@ -17,7 +17,9 @@ export class EntrySignIn extends Component {
     const { changeAuthStatus } = this.props;
     const { username, password } = this.state;
     AuthSignIn(username, password)
-      .then(({ authStatus, authData }) => {
+      .then(resp => {
+        const authStatus = resp.authStatus
+        const authData = resp.authData
         changeAuthStatus(authStatus, authData);
       })
       .catch((authStatus, authData, authError) => {
