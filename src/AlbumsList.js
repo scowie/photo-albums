@@ -36,6 +36,7 @@ class AlbumsList extends Component {
         <List divided relaxed>
           {this.albumItems()}
         </List>
+        <NavLink to={'/newalbum'}>Add New Album</NavLink>
       </div>
     )
   }

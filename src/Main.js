@@ -11,7 +11,7 @@ class Main extends Component {
       <Router>
         <Grid padded>
           <Grid.Column>
-            <Route path='/' exact component={NewAlbum} />
+            <Route path='/newalbum' exact component={NewAlbum} />
             <Route path='/' exact component={AlbumsListLoader} />
             <Route
               path='/albums/:albumId'
