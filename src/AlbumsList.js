@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Header, List, Segment } from 'semantic-ui-react'
+import { Header, List, Segment, Button, Icon } from 'semantic-ui-react'
 import { NavLink } from 'react-router-dom'
 
 
@@ -32,7 +32,14 @@ class AlbumsList extends Component {
   render () {
     return (
       <div>
-        <Header as='h3'>My Albums</Header>
+        <div style={styles.titleBarContainer}>
+        <div style={styles.titleBarTitleContainer}><h2>Galleries</h2>
+            
+        </div>
+        <Button icon>
+            Create New Gallery&nbsp;&nbsp;<Icon name="plus"></Icon>
+        </Button>
+        </div>
         <List divided relaxed>
           {this.albumItems()}
         </List>
@@ -42,5 +49,16 @@ class AlbumsList extends Component {
   }
 }
 
+const styles = {
+    titleBarContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+    },
+    titleBarTitleContainer: {
+        display: 'flex',
+        alignItems: 'center'
+    }
 
+}
 export default AlbumsList
