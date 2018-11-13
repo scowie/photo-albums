@@ -9,6 +9,7 @@ const ListAlbums = `query ListAlbums {
         items {
             id
             name
+            sortPosition
         }
     }
   }`
@@ -18,6 +19,7 @@ const SubscribeToNewAlbums = `
     onCreateAlbum {
       id
       name
+      sortPosition
     }
   }
 `

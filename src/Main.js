@@ -3,7 +3,6 @@ import { Grid } from 'semantic-ui-react'
 import { BrowserRouter as Router, Route, NavLink } from 'react-router-dom'
 import AlbumDetailsLoader from './AlbumDetailsLoader'
 import AlbumsListLoader from './AlbumsListLoader'
-import NewAlbum from './NewAlbum'
 
 class Main extends Component {
   render () {
@@ -11,7 +10,6 @@ class Main extends Component {
       <Router>
         <Grid padded>
           <Grid.Column>
-            <Route path='/newalbum' exact component={NewAlbum} />
             <Route path='/' exact component={AlbumsListLoader} />
             <Route
               path='/albums/:albumId'

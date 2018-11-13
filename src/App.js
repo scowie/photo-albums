@@ -3,6 +3,7 @@ import { withAuthenticator } from 'aws-amplify-react'
 import Navbar from './Navbar'
 import Main from './Main'
 import Amplify from 'aws-amplify'
+import './App.css'
 import aws_exports from './aws-exports'
 
 Amplify.configure(aws_exports)

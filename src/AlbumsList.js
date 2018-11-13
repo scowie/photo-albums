@@ -1,6 +1,9 @@
 import React, { Component } from "react";
-import { List, Segment, Button, Icon } from "semantic-ui-react";
-import { Redirect, NavLink } from "react-router-dom";
+import { API, graphqlOperation } from "aws-amplify";
+import { List, Segment, Button } from "semantic-ui-react";
+import { NavLink } from "react-router-dom";
+import TitleBarWithInput from "./TitleBarWithInput.js";
+import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
 
 function makeComparator(key, order = "asc") {
   return (a, b) => {
@@ -17,56 +20,105 @@ function makeComparator(key, order = "asc") {
   };
 }
 
+const SortableItem = SortableElement(({value}) =>
+  <li>{value.sortPosition}&nbsp;&nbsp;{value.name}</li>
+);
+
+const SortableList = SortableContainer(({items}) => {
+    return (
+      <ul>
+        {items.map((value, index) => (
+          <SortableItem key={`item-${index}`} index={index} value={value} />
+        ))}
+      </ul>
+    );
+  });
+
 class AlbumsList extends Component {
   state = {
-    shouldNavigateToNewAlbumPage: false
+    albums: this.props.albums,
+    newAlbumName: ""
   };
 
-  navigateToNewAlbumPage = () => {
-    return this.setState({ shouldNavigateToNewAlbumPage: true });
+  onSortEnd = ({oldIndex, newIndex}) => {
+    this.setState({
+      albums: arrayMove(this.state.albums, oldIndex, newIndex),
+    });
   };
+
+  navigateToNewAlbumPage = () =>
+    this.setState({ shouldNavigateToNewAlbumPage: true });
+
+  handleInputChange = event =>
+    this.setState({ newAlbumName: event.target.value });
+
+  handleSubmit = async event => {
+    event.preventDefault();
+    const NewAlbum = `mutation NewAlbum($name: String!, $sortPosition: Int) {
+        createAlbum(input: {name: $name, sortPosition: $sortPosition}) {
+          id
+          name
+          sortPosition
+        }
+      }`;
+
+    const result = await API.graphql(
+      graphqlOperation(NewAlbum, { name: this.state.newAlbumName, sortPosition: this.props.albums.length })
+    );
+    this.setState({ newAlbumName: "" });
+    console.info(`Created album with id ${result.data.createAlbum.id}`);
+  };
+
+  handleSaveAllAlbumChanges = () => {
+    this.state.albums.forEach((album, index) => {
+        this.saveAlbumChanges(album.id, index);
+    })
+  }
+
+  saveAlbumChanges = async (albumId, albumSortPosition) => {
+      const UpdateAlbum = `mutation UpdateAlbum($id: ID!, $sortPosition: Int) {
+        updateAlbum(input: {id: $id, sortPosition: $sortPosition}) {
+          id
+          name
+          sortPosition
+        }
+      }`;
+      const result = await API.graphql(
+        graphqlOperation(UpdateAlbum, { id: albumId, sortPosition: albumSortPosition })
+      );
+      console.log(result);
+  }
 
   albumItems() {
-    return this.props.albums.sort(makeComparator("name")).map(album => (
+    return this.props.albums.sort(makeComparator("sortPosition")).map(album => (
       <List.Item key={album.id}>
-        <Segment>
-          <NavLink to={`/albums/${album.id}`}>{album.name}</NavLink>
-        </Segment>
+        
+          <NavLink to={`/albums/${album.id}`}>
+          <Segment className="album-segment">{album.sortPosition}&nbsp;&nbsp;{album.name}</Segment>
+          </NavLink>
+      
       </List.Item>
     ));
   }
 
   render() {
-    return this.state.shouldNavigateToNewAlbumPage ? (
-      <Redirect to="/newalbum" />
-    ) : (
+    return (
       <div>
-        <div style={styles.titleBarContainer}>
-          <div style={styles.titleBarTitleContainer}>
-            <h2>Galleries</h2>
-          </div>
-          <Button icon onClick={this.navigateToNewAlbumPage}>
-            Create New Gallery&nbsp;&nbsp;
-            <Icon name="plus" />
-          </Button>
-        </div>
-        <List divided relaxed>
-          {this.albumItems()}
-        </List>
+        <TitleBarWithInput
+          title={"Galleries"}
+          inputPlaceholder={"New Gallery Name"}
+          inputActionName={"Create"}
+          submitFunction={this.handleSubmit}
+          inputName={"NewGallery"}
+          inputValue={this.state.newAlbumName}
+          inputChangeFunction={this.handleInputChange}
+        />
+        <List>{this.albumItems()}</List>
+        <SortableList items={this.state.albums} onSortEnd={this.onSortEnd} />
+        <Button onClick={ this.handleSaveAllAlbumChanges }>Save</Button>
       </div>
     );
   }
 }
 
-const styles = {
-  titleBarContainer: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between"
-  },
-  titleBarTitleContainer: {
-    display: "flex",
-    alignItems: "center"
-  }
-};
 export default AlbumsList;
