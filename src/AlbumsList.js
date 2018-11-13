@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import { API, graphqlOperation } from "aws-amplify";
-import { List, Segment, Button } from "semantic-ui-react";
+import { List, Segment, Button, Input } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
-import TitleBarWithInput from "./TitleBarWithInput.js";
 import {
   SortableContainer,
   SortableElement,
@@ -58,13 +57,10 @@ class AlbumsList extends Component {
     });
   };
 
-  navigateToNewAlbumPage = () =>
-    this.setState({ shouldNavigateToNewAlbumPage: true });
-
-  handleInputChange = event =>
+  handleNewGalleryInputChange = event =>
     this.setState({ newAlbumName: event.target.value });
 
-  handleSubmit = async event => {
+  handleNewGallerySubmit = async event => {
     event.preventDefault();
     const NewAlbum = `mutation NewAlbum($name: String!, $sortPosition: Int) {
         createAlbum(input: {name: $name, sortPosition: $sortPosition}) {
@@ -107,33 +103,37 @@ class AlbumsList extends Component {
     console.log(result);
   };
 
-  albumItems() {
-    return this.props.albums.sort(makeComparator("sortPosition")).map(album => (
-      <List.Item key={album.id}>
-        <NavLink to={`/albums/${album.id}`}>
-          <Segment className="album-segment">
-            {album.sortPosition}
-            &nbsp;&nbsp;
-            {album.name}
-          </Segment>
-        </NavLink>
-      </List.Item>
-    ));
+  sortAlbums = () => this.setState({albums: this.props.albums.sort(makeComparator("sortPosition"))});
+
+  componentDidMount(){
+    this.sortAlbums();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.albums !== this.props.albums) {
+      this.setState({albums: this.props.albums.sort(makeComparator("sortPosition"))})
+    }
   }
 
   render() {
     return (
       <div>
-        <TitleBarWithInput
-          title={"Galleries"}
-          inputPlaceholder={"New Gallery Name"}
-          inputActionName={"Create"}
-          submitFunction={this.handleSubmit}
-          inputName={"NewGallery"}
-          inputValue={this.state.newAlbumName}
-          inputChangeFunction={this.handleInputChange}
-        />
-        <List>{this.albumItems()}</List>
+        <div className="title-bar-container">
+          <div className="title-bar-title-container">
+            <h2>{"Galleries"}</h2>
+          </div>
+          <Input
+            type={"text"}
+            placeholder={"New Gallery Name"}
+            action={{
+              content: "Create",
+              onClick: this.handleNewGallerySubmit
+            }}
+            name={"New Gallery"}
+            value={this.state.newAlbumName}
+            onChange={this.handleNewGalleryInputChange}
+          />
+        </div>
         <SortableList albums={this.state.albums} onSortEnd={this.onSortEnd} />
         <Button onClick={this.handleSaveAllAlbumChanges}>Save</Button>
       </div>
