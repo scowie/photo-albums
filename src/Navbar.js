@@ -10,7 +10,7 @@ class Navbar extends Component {
     render () {
         const { activeItem } = this.state
         return (
-            <Menu>
+            <Menu id="navbar">
                 <Menu.Item
                     name='editorials'
                     active={activeItem === 'editorials'}

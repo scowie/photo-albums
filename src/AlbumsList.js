@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import { API, graphqlOperation } from "aws-amplify";
-import { List, Segment, Button, Input } from "semantic-ui-react";
+import { List, Segment, Button, Input, Icon} from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import {
   SortableContainer,
   SortableElement,
+  SortableHandle,
   arrayMove
 } from "react-sortable-hoc";
 
@@ -23,13 +24,18 @@ function makeComparator(key, order = "asc") {
   };
 }
 
+const DragHandle = SortableHandle(() => <div className={"album-drag-handle"}><Icon disabled name={"bars"}></Icon></div>); 
+
 const SortableItem = SortableElement(({ album }) => (
   <List.Item key={`album-${album.id}`}>
     <NavLink to={`/albums/${album.id}`}>
       <Segment className="album-segment">
-        {album.sortPosition}
-        &nbsp;&nbsp;
-        {album.name}
+        <DragHandle />
+        <div className={"album-segment__main-content"}>
+          {album.sortPosition}
+              &nbsp;&nbsp;
+          {album.name}
+        </div>
       </Segment>
     </NavLink>
   </List.Item>
@@ -48,7 +54,10 @@ const SortableList = SortableContainer(({ albums }) => {
 class AlbumsList extends Component {
   state = {
     albums: this.props.albums,
-    newAlbumName: ""
+    newAlbumName: "",
+    createInProgress: false,
+    saveInProgress: false,
+    hasUnsavedChanges: false
   };
 
   onSortEnd = ({ oldIndex, newIndex }) => {
@@ -80,10 +89,13 @@ class AlbumsList extends Component {
     console.info(`Created album with id ${result.data.createAlbum.id}`);
   };
 
-  handleSaveAllAlbumChanges = () => {
-    this.state.albums.forEach((album, index) => {
-      this.saveAlbumChanges(album.id, index);
-    });
+  handleSaveAllAlbumChanges = async () => {
+    this.setState({saveInProgress: true}, async () => {
+      await Promise.all(this.state.albums.map(async (album, index) => {
+        await this.saveAlbumChanges(album.id, index)
+      }))
+      this.setState({saveInProgress: false})
+    })
   };
 
   saveAlbumChanges = async (albumId, albumSortPosition) => {
@@ -101,6 +113,7 @@ class AlbumsList extends Component {
       })
     );
     console.log(result);
+    return result;
   };
 
   sortAlbums = () => this.setState({albums: this.props.albums.sort(makeComparator("sortPosition"))});
@@ -109,9 +122,14 @@ class AlbumsList extends Component {
     this.sortAlbums();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     if (prevProps.albums !== this.props.albums) {
-      this.setState({albums: this.props.albums.sort(makeComparator("sortPosition"))})
+      this.setState({
+        albums: this.props.albums.sort(makeComparator("sortPosition")),
+        hasUnsavedChanges: true
+      })
+    } else if (prevState.albums !== this.state.albums) {
+      this.setState({hasUnsavedChanges: true})
     }
   }
 
@@ -122,20 +140,29 @@ class AlbumsList extends Component {
           <div className="title-bar-title-container">
             <h2>{"Galleries"}</h2>
           </div>
-          <Input
-            type={"text"}
-            placeholder={"New Gallery Name"}
-            action={{
-              content: "Create",
-              onClick: this.handleNewGallerySubmit
-            }}
-            name={"New Gallery"}
-            value={this.state.newAlbumName}
-            onChange={this.handleNewGalleryInputChange}
-          />
+          <div className="title-bar-actions-container">
+            <Input
+              size="small"
+              type={"text"}
+              placeholder={"New Gallery Name"}
+              action={{
+                content: "Create",
+                onClick: this.handleNewGallerySubmit
+              }}
+              name={"New Gallery"}
+              value={this.state.newAlbumName}
+              onChange={this.handleNewGalleryInputChange}
+            />
+            <Button 
+              primary={this.state.hasUnsavedChanges}
+              loading={this.state.saveInProgress} 
+              disabled={this.state.createInProgress || this.state.saveInProgress || !this.state.hasUnsavedChanges} 
+              size="medium" 
+              onClick={this.handleSaveAllAlbumChanges} 
+              style={{marginLeft:'10px'}}>Save</Button>
+          </div>
         </div>
-        <SortableList albums={this.state.albums} onSortEnd={this.onSortEnd} />
-        <Button onClick={this.handleSaveAllAlbumChanges}>Save</Button>
+        <SortableList albums={this.state.albums} onSortEnd={this.onSortEnd} useDragHandle={true}/>
       </div>
     );
   }
