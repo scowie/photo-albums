@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import { Menu } from 'semantic-ui-react'
+import { Menu, Dropdown } from 'semantic-ui-react'
+import { Auth } from 'aws-amplify'
 
 class Navbar extends Component {
 
@@ -7,30 +8,31 @@ class Navbar extends Component {
 
     handleItemClick = (e, { name }) => this.setState({ activeItem: name })
 
+    getAuthenticatedUser = async () => await Auth.currentAuthenticatedUser()
+
+    signOutUser = () => Auth.signOut().then(() => {
+        window.location.reload()
+    })
+
+    getUsername = () => this.state.user && this.state.user.username ? this.state.user.username : ""
+
+    componentDidMount() {
+        this.getAuthenticatedUser().then(user => this.setState({user: user}))
+    }
+
     render () {
         const { activeItem } = this.state
         return (
             <Menu id="navbar">
-                <Menu.Item
-                    name='editorials'
-                    active={activeItem === 'editorials'}
-                    onClick={this.handleItemClick}>
-                    Editorials
-                </Menu.Item>
-
-                <Menu.Item 
-                    name='reviews' 
-                    active={activeItem === 'reviews'} 
-                    onClick={this.handleItemClick}>
-                    Reviews
-                </Menu.Item>
-
-                <Menu.Item
-                    name='upcomingEvents'
-                    active={activeItem === 'upcomingEvents'}
-                    onClick={this.handleItemClick}>
-                    Upcoming Events
-                </Menu.Item>
+                <Menu.Menu position='right'>
+                    <Menu.Item>
+                    <Dropdown text={this.getUsername()} pointing className="link item">
+                        <Dropdown.Menu>
+                            <Dropdown.Item onClick={this.signOutUser}>Logout</Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
+                    </Menu.Item>
+                </Menu.Menu>
             </Menu>
         )
     }

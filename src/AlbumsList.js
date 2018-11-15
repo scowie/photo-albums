@@ -32,8 +32,6 @@ const SortableItem = SortableElement(({ album }) => (
       <Segment className="album-segment">
         <DragHandle />
         <div className={"album-segment__main-content"}>
-          {album.sortPosition}
-              &nbsp;&nbsp;
           {album.name}
         </div>
       </Segment>
@@ -159,7 +157,8 @@ class AlbumsList extends Component {
               disabled={this.state.createInProgress || this.state.saveInProgress || !this.state.hasUnsavedChanges} 
               size="medium" 
               onClick={this.handleSaveAllAlbumChanges} 
-              style={{marginLeft:'10px'}}>Save</Button>
+              style={{marginLeft:'10px'}}
+              className={"pm-button"}>Save</Button>
           </div>
         </div>
         <SortableList albums={this.state.albums} onSortEnd={this.onSortEnd} useDragHandle={true}/>

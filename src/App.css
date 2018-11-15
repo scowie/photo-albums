@@ -12,16 +12,59 @@
   --color-ctx-7: #e2623d;
   /* hover highlight */
   --color-ctx-8: #cce9f0;
+  --color-ctx-9: #cce0f0;
+}
+
+body {
+  position:relative;
+  display:block;
+  overflow-x:hidden;
+  background:var(--color-ctx-2);
+}
+
+.ui.primary.button.pm-button {
+  background:var(--color-ctx-6);
 }
 
 #navbar {
   background: var(--color-primary);
   height:60px;
   border-radius:0px;
+  margin:0;
 }
 
-#navbar * {
+#navbar > * {
   color:#fff;
+}
+
+#navbar .dropdown {
+  color:#fff;
+}
+
+.layout-main {
+  min-height:15em;
+  margin-top:0;
+  background:var(--color-ctx-2);
+  padding:0;
+  display:flex;
+  flex-flow:column nowrap;
+  justify-content: stretch;
+  position: relative;
+  margin: 0;
+  border:0;
+  vertical-align: baseline;
+}
+
+.layout-main__content {
+  border-top: 1rem solid var(--color-ctx-2) !important;
+  border-left: 1rem solid var(--color-ctx-2) !important;
+  border-right: 1rem solid var(--color-ctx-2) !important;
+  padding:2rem;
+  background:#fff;
+  flex: 1 1 auto;
+  margin:0;
+  border:0;
+  vertical-align:baseline;
 }
 
 .title-bar-container {
@@ -52,7 +95,7 @@
 }
 
 .album-segment__main-content {
-  margin-left:20px;
+  margin-left:25px;
 }
 
 .album-drag-handle {
@@ -69,7 +112,7 @@
 }
 
 .album-drag-handle:hover {
-  background: #f5f5f5;
+  background: var(--color-ctx-2);
 }
 
 .album-drag-handle .icon {

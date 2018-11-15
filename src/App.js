@@ -13,7 +13,11 @@ class App extends Component {
     return (
       <div>
         <Navbar />
-        <Main />
+          <main className="layout-main">
+            <div className="layout-main__content">
+              <Main />
+            </div>
+          </main>
       </div>
     )
   }
