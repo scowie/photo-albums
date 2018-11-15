@@ -41,6 +41,13 @@ body {
   color:#fff;
 }
 
+#mega-menu .ui.pointing.dropdown.link.item {
+  border:1px solid #fff;
+  border-radius:3px;
+  padding-top:10px;
+  padding-bottom:10px;
+}
+
 .layout-main {
   min-height:15em;
   margin-top:0;
