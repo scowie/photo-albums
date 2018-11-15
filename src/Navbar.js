@@ -1,11 +1,15 @@
 import React, { Component } from "react";
 import { Menu, Dropdown, Icon } from "semantic-ui-react";
 import { Auth } from "aws-amplify";
+import { NavLink } from "react-router-dom";
 
 class Navbar extends Component {
-  state = {};
+  state = {
+    menuItems: [],
+    activeMenuItem: ""
+  };
 
-  handleItemClick = (e, { name }) => this.setState({ activeItem: name });
+  handleItemClick = (e, { name }) => this.setState({ activeMenuItem: name });
 
   getAuthenticatedUser = async () => await Auth.currentAuthenticatedUser();
 
@@ -19,13 +23,12 @@ class Navbar extends Component {
 
   componentDidMount() {
     this.getAuthenticatedUser().then(user => this.setState({ user: user }));
+    this.setState({
+      activeMenuItem: window.location.pathname.split("/")[1].toUpperCase()
+    });
   }
 
-  // todo:  make array of menu item names
-  // set active item and show active item in navbar
-
   render() {
-    const { activeItem } = this.state;
     const menuTrigger = (
       <span>
         <Icon name={"th"} /> MENU
@@ -43,10 +46,18 @@ class Navbar extends Component {
             className="link item"
           >
             <Dropdown.Menu>
-              <Dropdown.Item>Menu Item</Dropdown.Item>
+              <Dropdown.Item
+                name="ALBUMS"
+                active={this.state.activeMenuItem === "ALBUMS"}
+                onClick={this.handleItemClick}
+              >
+                <NavLink to="/albums">Albums</NavLink>
+              </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Menu.Item>
+
+        <Menu.Item>{this.state.activeMenuItem}</Menu.Item>
 
         <Menu.Item position="right">
           <Dropdown
