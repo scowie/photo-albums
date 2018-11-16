@@ -77,14 +77,19 @@ class AlbumsList extends Component {
         }
       }`;
 
-    const result = await API.graphql(
-      graphqlOperation(NewAlbum, {
-        name: this.state.newAlbumName,
-        sortPosition: this.props.albums.length
+      this.setState({createInProgress: true}, async () => {
+        
+        const result = await API.graphql(
+            graphqlOperation(NewAlbum, {
+              name: this.state.newAlbumName,
+              sortPosition: this.props.albums.length
+            })
+          );
+
+        this.setState({createInProgress: false})
+        this.setState({ newAlbumName: "" });
+        console.info(`Created album with id ${result.data.createAlbum.id}`);
       })
-    );
-    this.setState({ newAlbumName: "" });
-    console.info(`Created album with id ${result.data.createAlbum.id}`);
   };
 
   handleSaveAllAlbumChanges = async () => {
@@ -123,10 +128,9 @@ class AlbumsList extends Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.albums !== this.props.albums) {
       this.setState({
-        albums: this.props.albums.sort(makeComparator("sortPosition")),
-        hasUnsavedChanges: true
+        albums: this.props.albums.sort(makeComparator("sortPosition"))
       })
-    } else if (prevState.albums !== this.state.albums) {
+    } else if (prevState.albums !== this.state.albums && prevState.albums.length === this.state.albums.length) {
       this.setState({hasUnsavedChanges: true})
     }
   }
@@ -140,12 +144,15 @@ class AlbumsList extends Component {
           </div>
           <div className="title-bar-actions-container">
             <Input
+                className="pm-input"
               size="small"
               type={"text"}
               placeholder={"New Gallery Name"}
               action={{
                 content: "Create",
-                onClick: this.handleNewGallerySubmit
+                onClick: this.handleNewGallerySubmit,
+                disabled: !this.state.newAlbumName.length > 0 || this.state.createInProgress,
+                loading: this.state.createInProgress
               }}
               name={"New Gallery"}
               value={this.state.newAlbumName}
