@@ -1,13 +1,17 @@
 import React, { Component } from "react";
 import { S3Image } from "aws-amplify-react";
-import { Form, Button, Icon, Divider } from "semantic-ui-react";
+import { Menu, Segment, Button, Icon, Divider, Sidebar } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
 
 class PhotoDetails extends Component {
   state = {
-    photo: this.props.photo
+    photo: this.props.photo,
+    sidebarVisible: true
   };
+
+  toggleSidebarVisibility = () =>
+    this.setState({ sidebarVisible: !this.state.sidebarVisible });
 
   saveImageChanges = async (
     photoId,
@@ -51,7 +55,9 @@ class PhotoDetails extends Component {
       <div>
         <div className="title-bar-container">
           <div className="title-bar-title-container">
-            <h2>{this.state.photo ? this.state.photo.title : "Add a title..."}</h2>
+            <h2>
+              {this.state.photo ? this.state.photo.title : "Add a title..."}
+            </h2>
           </div>
           <div className="title-bar-actions-container">
             <NavLink to={`/albums/${this.props.photo.album.id}`}>
@@ -74,9 +80,32 @@ class PhotoDetails extends Component {
           </div>
         </div>
         <Divider />
-        
-        <div className="pm-fullsize-image-container">
-        <S3Image imgKey={this.props.photo.fullsize.key.replace("public/", "")} />
+        <div style={{position:'relative'}}>
+        <Button circular icon='settings' className="pm-button--sidebar-toggle" onClick={this.toggleSidebarVisibility}/>
+        <Sidebar.Pushable as={Segment}>
+          <Sidebar
+            as={Menu}
+            animation="overlay"
+            icon="labeled"
+            vertical
+            visible={this.state.sidebarVisible}
+            width="thin"
+          >
+            <Menu.Item as="a">
+              <Icon name="home" />
+              Home
+            </Menu.Item>
+          </Sidebar>
+
+          <Sidebar.Pusher>
+            <div className="pm-fullsize-image-container">
+              <S3Image
+                imgKey={this.props.photo.fullsize.key.replace("public/", "")}
+              />
+            </div>
+          </Sidebar.Pusher>
+        </Sidebar.Pushable>
+
         </div>
       </div>
     );
