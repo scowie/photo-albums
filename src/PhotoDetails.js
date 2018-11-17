@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import PhotosList from "./PhotosList";
-import S3ImageUpload from "./S3ImageUpload";
+import { S3Image } from "aws-amplify-react";
 import { Form, Button, Icon, Divider } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
@@ -75,6 +74,10 @@ class PhotoDetails extends Component {
           </div>
         </div>
         <Divider />
+        
+        <div className="pm-fullsize-image-container">
+        <S3Image imgKey={this.props.photo.fullsize.key.replace("public/", "")} />
+        </div>
       </div>
     );
   }
