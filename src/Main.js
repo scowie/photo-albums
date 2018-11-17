@@ -1,12 +1,8 @@
 import React, { Component } from "react";
 import { Grid } from "semantic-ui-react";
-import {
-  BrowserRouter as Router,
-  Route,
-  NavLink,
-  Redirect
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Redirect } from "react-router-dom";
 import AlbumDetailsLoader from "./AlbumDetailsLoader";
+import PhotoDetailsLoader from "./PhotoDetailsLoader";
 import AlbumsListLoader from "./AlbumsListLoader";
 import Navbar from "./Navbar";
 
@@ -25,19 +21,22 @@ class Main extends Component {
                     exact
                     component={() => <Redirect to="/albums" />}
                   />
-                  <Route path="/albums" exact component={AlbumsListLoader} />
+                  <Route 
+                    path="/albums" 
+                    exact 
+                    component={AlbumsListLoader} />
                   <Route
                     path="/albums/:albumId"
-                    render={() => (
-                      <div>
-                        <NavLink to="/">Back to Albums list</NavLink>
-                      </div>
+                    exact
+                    render={props => (
+                      <AlbumDetailsLoader id={props.match.params.albumId} />
                     )}
                   />
                   <Route
-                    path="/albums/:albumId"
+                    path="/albums/:albumId/photos/:photoId"
+                    exact
                     render={props => (
-                      <AlbumDetailsLoader id={props.match.params.albumId} />
+                      <PhotoDetailsLoader id={props.match.params.photoId} />
                     )}
                   />
                 </Grid.Column>

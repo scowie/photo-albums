@@ -1,25 +1,121 @@
-import React, { Component } from 'react'
-import { Divider } from 'semantic-ui-react'
-import { S3Image } from 'aws-amplify-react'
+import React, { Component } from "react";
+import { NavLink } from "react-router-dom";
+import { Card, Icon, Image } from "semantic-ui-react";
+import { S3Image } from "aws-amplify-react";
+import {
+  SortableContainer,
+  SortableElement,
+  SortableHandle,
+  arrayMove
+} from "react-sortable-hoc";
+
+function makeComparator(key, order = "asc") {
+  return (a, b) => {
+    if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) return 0;
+
+    const aVal = typeof a[key] === "string" ? a[key].toUpperCase() : a[key];
+    const bVal = typeof b[key] === "string" ? b[key].toUpperCase() : b[key];
+
+    let comparison = 0;
+    if (aVal > bVal) comparison = 1;
+    if (aVal < bVal) comparison = -1;
+
+    return order === "desc" ? comparison * -1 : comparison;
+  };
+}
+
+const DragHandle = SortableHandle(() => (
+  <div className={"photo-drag-handle"}>
+    <Icon disabled name={"bars"} />
+  </div>
+));
+
+const SortableItem = SortableElement(({ photo, sortIndex }) => (
+  <Card key={photo.thumbnail.key}>
+    <DragHandle />
+    <div className="pm-photo-sort-position">
+      <span>{sortIndex + 1}</span>
+    </div>
+    <NavLink to={`/albums/${photo.album.id}/photos/${photo.id}`}>
+    <Image>
+      <S3Image imgKey={photo.thumbnail.key.replace("public/", "")} />
+    </Image>
+    </NavLink>
+
+    <Card.Content>
+      <Card.Header >Daniel</Card.Header>
+      <Card.Meta>Joined in 2016</Card.Meta>
+      <Card.Description>
+        Daniel is a comedian living in Nashville.
+      </Card.Description>
+    </Card.Content>
+    <Card.Content extra>
+      <Icon name="user" />
+      10 Friends
+    </Card.Content>
+  </Card>
+));
+
+const SortableList = SortableContainer(({ photos }) => (
+  <Card.Group>
+    {photos.map((photo, index) => (
+      <SortableItem
+        key={`photo-${photo.thumbnail.key}`}
+        index={index}
+        sortIndex={index}
+        photo={photo}
+      />
+    ))}
+  </Card.Group>
+));
 
 class PhotosList extends Component {
-    photoItems () {
-      return this.props.photos.map(photo => (
-        <S3Image
-          key={photo.thumbnail.key}
-          imgKey={photo.thumbnail.key.replace('public/', '')}
-          style={{ display: 'inline-block', paddingRight: '5px' }}
-        />
-      ))
-    }
-    render () {
-      return (
-        <div>
-          <Divider hidden />
-          {this.photoItems()}
-        </div>
-      )
-    }
+  state = {
+    photos: this.props.photos,
+    uploadInProgress: false,
+    saveInProgress: false,
+    hasUnsavedChanges: false
+  };
+
+  onSortEnd = ({ oldIndex, newIndex }) => {
+    this.setState({
+      photos: arrayMove(this.state.photos, oldIndex, newIndex)
+    });
+  };
+
+  sortAlbums = () =>
+    this.setState({
+      photos: this.props.photos.sort(makeComparator("sortPosition"))
+    });
+
+  componentDidMount() {
+    this.sortAlbums();
   }
 
-export default PhotosList
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.photos !== this.props.photos) {
+      this.setState({
+        photos: this.props.photos.sort(makeComparator("sortPosition"))
+      });
+    } else if (
+      prevState.photos !== this.state.photos &&
+      prevState.photos.length === this.state.photos.length
+    ) {
+      this.setState({ hasUnsavedChanges: true });
+    }
+  }
+  render() {
+    return (
+      <div>
+        <SortableList
+          photos={this.state.photos}
+          axis={"xy"}
+          onSortEnd={this.onSortEnd}
+          useDragHandle={true}
+        />
+      </div>
+    );
+  }
+}
+
+export default PhotosList;

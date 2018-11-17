@@ -24,13 +24,17 @@ body {
   background:var(--color-ctx-2);
 }
 
-.ui.primary.button.pm-button {
+button.pm-button:active {
+  transform: scale(.95);
+}
+
+button.ui.primary.button.pm-button {
   background:var(--color-ctx-6);
 }
 
 .pm-input {
-  border:1px solid var(--color-ctx-10);
-  border-radius:3px;
+  /* border:1px solid var(--color-ctx-10); */
+  border-radius:5px;
 }
 
 #navbar {
@@ -112,6 +116,24 @@ body {
   margin-left:25px;
 }
 
+.photo-drag-handle {
+  width:100%;
+  height:35px;
+  position:absolute;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  margin:0px;
+  padding:0px;
+  left:0px;
+  z-index:2;
+  background: rgba(255, 255, 255, .2);
+}
+
+.photo-drag-handle:hover {
+  cursor:move;
+}
+
 .album-drag-handle {
   width:35px;
   height:35px;
@@ -129,7 +151,36 @@ body {
   background: var(--color-ctx-2);
 }
 
-.album-drag-handle .icon {
+.album-drag-handle .icon,
+.photo-drag-handle .icon {
   margin:0px;
   padding:0px;
+}
+
+.pm-image-thumbnail-grid-wrapper {
+  display:flex;
+  flex-wrap:wrap;
+}
+
+.pm-image-thumbnail-grid-item-container {
+  height:200px;
+  width:200px;
+  border:1px solid var(--color-ctx-10);
+}
+
+.pm-photo-sort-position {
+  z-index:3;
+  position:absolute;
+  padding:8px;
+  right:0px;
+}
+
+.pm-photo-sort-position span {
+  color:var(--default-text-color);
+  font-size:1.3rem;
+}
+
+.ui.card > .ui.image img {
+  border-top-left-radius:4px;
+  border-top-right-radius:4px;
 }

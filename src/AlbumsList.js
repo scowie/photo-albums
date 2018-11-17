@@ -152,7 +152,9 @@ class AlbumsList extends Component {
                 content: "Create",
                 onClick: this.handleNewGallerySubmit,
                 disabled: !this.state.newAlbumName.length > 0 || this.state.createInProgress,
-                loading: this.state.createInProgress
+                primary: this.state.newAlbumName.length > 0,
+                loading: this.state.createInProgress,
+                className: 'pm-button'
               }}
               name={"New Gallery"}
               value={this.state.newAlbumName}
