@@ -17,6 +17,7 @@ const GetAlbum = `query GetAlbum($id: ID!, $nextTokenForPhotos: String) {
             sortPosition
             title
             description
+            isVisible
             bucket
             fullsize {
                 width

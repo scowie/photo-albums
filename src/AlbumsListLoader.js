@@ -10,6 +10,7 @@ const ListAlbums = `query ListAlbums {
             id
             name
             sortPosition
+            isVisible
         }
     }
   }`
@@ -20,6 +21,7 @@ const SubscribeToNewAlbums = `
       id
       name
       sortPosition
+      isVisible
     }
   }
 `

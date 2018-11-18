@@ -201,3 +201,14 @@ button.ui.primary.button.pm-button {
 .ui.button.pm-button--sidebar-toggle:active {
   transform: scale(.95);
 }
+
+.pm-button.ui.active.toggle.button {
+  background-color: var(--color-primary) !important;
+}
+
+.pm-sidebar-container form {
+  background:#fff;
+  padding-top:55px;
+  padding-left:10px;
+  padding-right:10px;
+}

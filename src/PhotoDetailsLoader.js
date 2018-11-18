@@ -11,6 +11,7 @@ const GetPhoto = `query GetPhoto($id: ID!) {
       sortPosition
       title
       description
+      isVisible
       bucket
       fullsize {
           width

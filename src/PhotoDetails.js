@@ -1,13 +1,21 @@
 import React, { Component } from "react";
 import { S3Image } from "aws-amplify-react";
-import { Menu, Segment, Button, Icon, Divider, Sidebar } from "semantic-ui-react";
+import {
+  Form,
+  Segment,
+  Button,
+  Icon,
+  Divider,
+  Sidebar
+} from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
 
 class PhotoDetails extends Component {
   state = {
-    photo: this.props.photo,
-    sidebarVisible: true
+    sidebarVisible: true,
+    hasUnsavedChanges: false,
+    saveInProgress: false
   };
 
   toggleSidebarVisibility = () =>
@@ -45,8 +53,28 @@ class PhotoDetails extends Component {
     this.setState({ photo: newPhoto });
   };
 
+  handlePhotoDescriptionChange = event => {
+    const newPhoto = Object.assign({}, this.state.photo);
+    newPhoto.description = event.target.value;
+    this.setState({ photo: newPhoto });
+  };
+
+  togglePhotoVisibility = event => {
+    const newPhoto = Object.assign({}, this.state.photo);
+    newPhoto.isVisible = this.state.photo.isVisible ? false : true;
+    this.setState({ photo: newPhoto });
+  };
+
   componentDidMount() {
     this.setState({ photo: this.props.photo });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.photo !== this.props.photo) {
+      this.setState({ photo: this.props.photo });
+    } else if (prevState.photo && prevState.photo !== this.state.photo) {
+      this.setState({ hasUnsavedChanges: true });
+    }
   }
 
   render() {
@@ -56,7 +84,9 @@ class PhotoDetails extends Component {
         <div className="title-bar-container">
           <div className="title-bar-title-container">
             <h2>
-              {this.state.photo ? this.state.photo.title : "Add a title..."}
+              {this.state.photo && this.state.photo.title
+                ? this.state.photo.title
+                : "Add a title..."}
             </h2>
           </div>
           <div className="title-bar-actions-container">
@@ -70,42 +100,89 @@ class PhotoDetails extends Component {
                 Album
               </Button>
             </NavLink>
-            <Button
-              size="medium"
-              style={{ marginLeft: "10px" }}
-              className={"pm-button"}
-            >
-              Save
-            </Button>
           </div>
         </div>
         <Divider />
-        <div style={{position:'relative'}}>
-        <Button circular icon='settings' className="pm-button--sidebar-toggle" onClick={this.toggleSidebarVisibility}/>
-        <Sidebar.Pushable as={Segment}>
-          <Sidebar
-            as={Menu}
-            animation="overlay"
-            icon="labeled"
-            vertical
-            visible={this.state.sidebarVisible}
-            width="thin"
-          >
-            <Menu.Item as="a">
-              <Icon name="home" />
-              Home
-            </Menu.Item>
-          </Sidebar>
+        <div style={{ position: "relative" }}>
+          <Button
+            circular
+            icon={this.state.sidebarVisible ? "arrow left" : "pencil"}
+            className="pm-button--sidebar-toggle"
+            onClick={this.toggleSidebarVisibility}
+          />
+          <Sidebar.Pushable as={Segment} className="pm-sidebar-container">
+            <Sidebar
+              as={Form}
+              animation="overlay"
+              icon="labeled"
+              vertical="true"
+              visible={this.state.sidebarVisible}
+              width="very wide"
+            >
+              <Form.Field>
+                <label>Title</label>
+                <input
+                  placeholder="Photo Title"
+                  onChange={this.handlePhotoTitleChange}
+                  value={
+                    this.state.photo && this.state.photo.title
+                      ? this.state.photo.title
+                      : ""
+                  }
+                />
+              </Form.Field>
+              <Form.Field>
+                <label>Description</label>
+                <textarea
+                  rows={2}
+                  onChange={this.handlePhotoDescriptionChange}
+                  value={
+                    this.state.photo && this.state.photo.description
+                      ? this.state.photo.description
+                      : ""
+                  }
+                />
+              </Form.Field>
+              <Form.Field>
+                <label>Visibility</label>
+                <Button
+                  className="pm-button"
+                  toggle
+                  active={
+                    this.state.photo && this.state.photo.isVisible
+                      ? this.state.photo.isVisible
+                      : false
+                  }
+                  onClick={this.togglePhotoVisibility}
+                >
+                  {this.state.photo && this.state.photo.isVisible
+                    ? "Visible"
+                    : "Hidden"}
+                </Button>
+              </Form.Field>
+              <div style={{ marginTop:"50px", display: "flex", justifyContent: "flex-end" }}>
+                <Button
+                  primary={this.state.hasUnsavedChanges}
+                  loading={this.state.saveInProgress} 
+                  disabled={this.state.saveInProgress || !this.state.hasUnsavedChanges} 
+                  onClick={this.handleSavePhotoChanges} 
+                  size="medium"
+                  style={{ marginLeft: "10px" }}
+                  className={"pm-button"}
+                >
+                  Save
+                </Button>
+              </div>
+            </Sidebar>
 
-          <Sidebar.Pusher>
-            <div className="pm-fullsize-image-container">
-              <S3Image
-                imgKey={this.props.photo.fullsize.key.replace("public/", "")}
-              />
-            </div>
-          </Sidebar.Pusher>
-        </Sidebar.Pushable>
-
+            <Sidebar.Pusher>
+              <div className="pm-fullsize-image-container">
+                <S3Image
+                  imgKey={this.props.photo.fullsize.key.replace("public/", "")}
+                />
+              </div>
+            </Sidebar.Pusher>
+          </Sidebar.Pushable>
         </div>
       </div>
     );
