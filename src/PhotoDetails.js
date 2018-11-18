@@ -21,30 +21,30 @@ class PhotoDetails extends Component {
   toggleSidebarVisibility = () =>
     this.setState({ sidebarVisible: !this.state.sidebarVisible });
 
-  saveImageChanges = async (
-    photoId,
-    photoSortPosition,
-    photoTitle,
-    photoDescription
-  ) => {
-    const UpdatePhoto = `mutation UpdatePhoto($id: ID!, $sortPosition: Int, $title: String, $description: String) {
-        updatePhoto(input: {id: $id, sortPosition: $sortPosition, title: $title, description: $description}) {
+  savePhotoChanges = async () => {
+    const UpdatePhoto = `mutation UpdatePhoto($id: ID!, $sortPosition: Int, $title: String, $description: String, $isVisible: Boolean) {
+        updatePhoto(input: {id: $id, sortPosition: $sortPosition, title: $title, description: $description, isVisible: $isVisible}) {
           id
           sortPosition
           title
           description
+          isVisible
         }
       }`;
-    const result = await API.graphql(
-      graphqlOperation(UpdatePhoto, {
-        id: photoId,
-        sortPosition: photoSortPosition,
-        title: photoTitle,
-        description: photoDescription
-      })
-    );
-    console.log(result);
-    return result;
+    
+    this.setState({saveInProgress: true}, async () => {
+      const result = await API.graphql(
+        graphqlOperation(UpdatePhoto, {
+          id: this.state.photo.id,
+          sortPosition: this.state.photo.sortPosition,
+          title: this.state.photo.title,
+          description: this.state.photo.description,
+          isVisible: this.state.photo.isVisible
+        })
+      );
+      this.setState({saveInProgress: false})
+      return result;
+    })
   };
 
   handlePhotoTitleChange = event => {
@@ -165,7 +165,7 @@ class PhotoDetails extends Component {
                   primary={this.state.hasUnsavedChanges}
                   loading={this.state.saveInProgress} 
                   disabled={this.state.saveInProgress || !this.state.hasUnsavedChanges} 
-                  onClick={this.handleSavePhotoChanges} 
+                  onClick={this.savePhotoChanges} 
                   size="medium"
                   style={{ marginLeft: "10px" }}
                   className={"pm-button"}
