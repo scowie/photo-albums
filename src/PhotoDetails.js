@@ -13,13 +13,15 @@ import { API, graphqlOperation } from "aws-amplify";
 
 class PhotoDetails extends Component {
   state = {
-    sidebarVisible: true,
+    sidebarVisible: false,
     hasUnsavedChanges: false,
     saveInProgress: false
   };
 
-  toggleSidebarVisibility = () =>
+  toggleSidebarVisibility = e => { 
+    e.preventDefault()
     this.setState({ sidebarVisible: !this.state.sidebarVisible });
+  }
 
   savePhotoChanges = async () => {
     const UpdatePhoto = `mutation UpdatePhoto($id: ID!, $sortPosition: Int, $title: String, $description: String, $isVisible: Boolean) {
@@ -31,8 +33,8 @@ class PhotoDetails extends Component {
           isVisible
         }
       }`;
-    
-    this.setState({saveInProgress: true}, async () => {
+
+    this.setState({ saveInProgress: true }, async () => {
       const result = await API.graphql(
         graphqlOperation(UpdatePhoto, {
           id: this.state.photo.id,
@@ -42,9 +44,9 @@ class PhotoDetails extends Component {
           isVisible: this.state.photo.isVisible
         })
       );
-      this.setState({saveInProgress: false})
+      this.setState({ saveInProgress: false });
       return result;
-    })
+    });
   };
 
   handlePhotoTitleChange = event => {
@@ -99,17 +101,23 @@ class PhotoDetails extends Component {
                 <Icon name="left arrow" />
                 Album
               </Button>
+              <Button
+                className="pm-button"
+                onClick={this.toggleSidebarVisibility}
+              ><Icon name="pencil" />
+              Edit
+              </Button>
             </NavLink>
           </div>
         </div>
         <Divider />
         <div style={{ position: "relative" }}>
-          <Button
+          {this.state.sidebarVisible && <Button
             circular
-            icon={this.state.sidebarVisible ? "arrow left" : "pencil"}
+            icon={"arrow left"}
             className="pm-button--sidebar-toggle"
             onClick={this.toggleSidebarVisibility}
-          />
+          />}
           <Sidebar.Pushable as={Segment} className="pm-sidebar-container">
             <Sidebar
               as={Form}
@@ -160,12 +168,20 @@ class PhotoDetails extends Component {
                     : "Hidden"}
                 </Button>
               </Form.Field>
-              <div style={{ marginTop:"50px", display: "flex", justifyContent: "flex-end" }}>
+              <div
+                style={{
+                  marginTop: "50px",
+                  display: "flex",
+                  justifyContent: "flex-end"
+                }}
+              >
                 <Button
                   primary={this.state.hasUnsavedChanges}
-                  loading={this.state.saveInProgress} 
-                  disabled={this.state.saveInProgress || !this.state.hasUnsavedChanges} 
-                  onClick={this.savePhotoChanges} 
+                  loading={this.state.saveInProgress}
+                  disabled={
+                    this.state.saveInProgress || !this.state.hasUnsavedChanges
+                  }
+                  onClick={this.savePhotoChanges}
                   size="medium"
                   style={{ marginLeft: "10px" }}
                   className={"pm-button"}

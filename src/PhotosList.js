@@ -43,10 +43,10 @@ const SortableItem = SortableElement(({ photo, sortIndex }) => (
     </NavLink>
 
     <Card.Content>
-      <Card.Header >Daniel</Card.Header>
+      <Card.Header>{photo.title}</Card.Header>
       <Card.Meta>Joined in 2016</Card.Meta>
       <Card.Description>
-        Daniel is a comedian living in Nashville.
+        {photo.description}
       </Card.Description>
     </Card.Content>
     <Card.Content extra>

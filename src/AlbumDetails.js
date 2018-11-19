@@ -3,8 +3,46 @@ import PhotosList from "./PhotosList";
 import S3ImageUpload from "./S3ImageUpload";
 import { Form, Button, Icon, Divider } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
+import { API, graphqlOperation } from "aws-amplify";
 
 class AlbumDetails extends Component {
+    state = {
+        saveInProgress: false,
+        hasUnsavedChanges: false
+    }
+
+    saveAlbumChanges = async () => {
+        const UpdateAlbum = `mutation UpdateAlbum($id: ID!, $name: String, $sortPosition: Int, $isVisible: Boolean) {
+            updateAlbum(input: {id: $id, name: $name, sortPosition: $sortPosition, isVisible: $isVisible}) {
+              id
+              name
+              sortPosition
+              isVisible
+            }
+          }`;
+
+        this.setState({saveInProgress: true}, async () => {
+            const result = await API.graphql(
+                graphqlOperation(UpdateAlbum, {
+                  id: this.state.album.id,
+                  name: this.state.album.name,
+                  sortPosition: this.state.album.sortPosition,
+                  isVisible: this.state.album.isVisible
+                })
+              );
+              this.setState({saveInProgress: false})
+              return result;
+        })
+      };
+
+      componentDidUpdate(prevProps, prevState) {
+        if (prevProps.album !== this.props.album) {
+          this.setState({ album: this.props.album });
+        } else if (prevState.album && prevState.album !== this.state.album) {
+          this.setState({ hasUnsavedChanges: true });
+        }
+      }
+
   render() {
     if (!this.props.album) return "Loading album...";
     return (
