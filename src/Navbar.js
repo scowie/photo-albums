@@ -42,7 +42,7 @@ class Navbar extends Component {
           <Dropdown
             icon={null}
             trigger={menuTrigger}
-            pointing
+            floating
             className="link item"
           >
             <Dropdown.Menu>
@@ -63,7 +63,7 @@ class Navbar extends Component {
           <Dropdown
             text={this.getUsername()}
             icon={null}
-            pointing
+            floating
             className="link item"
           >
             <Dropdown.Menu>
