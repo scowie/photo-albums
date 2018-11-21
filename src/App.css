@@ -15,6 +15,8 @@
   --color-ctx-9: #cce0f0;
     /* tables and form highlightiing */
   --color-ctx-10: #bfc4ca;
+  /* default button background */
+  --color-ctx-11: #e0e1e2;
 }
 
 body {
@@ -211,4 +213,19 @@ button.ui.primary.button.pm-button {
   padding-top:55px;
   padding-left:10px;
   padding-right:10px;
+}
+
+#album-details-actions-dropdown .item {
+  padding:0px !important;
+}
+
+#album-details-actions-dropdown button {
+  background:#fff;
+  width:100%;
+  display:flex;
+  justify-content:flex-start;
+}
+
+#album-details-actions-dropdown button:hover {
+  background: var(--color-ctx-11);
 }

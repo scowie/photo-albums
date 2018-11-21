@@ -8,6 +8,7 @@ import {
   SortableHandle,
   arrayMove
 } from "react-sortable-hoc";
+import { API, graphqlOperation } from "aws-amplify";
 
 function makeComparator(key, order = "asc") {
   return (a, b) => {
@@ -77,9 +78,41 @@ class PhotosList extends Component {
     hasUnsavedChanges: false
   };
 
+  savePhotoChanges = async photo => {
+    const UpdatePhoto = `mutation UpdatePhoto($id: ID!, $sortPosition: Int, $title: String, $description: String, $isVisible: Boolean) {
+        updatePhoto(input: {id: $id, sortPosition: $sortPosition, title: $title, description: $description, isVisible: $isVisible}) {
+          id
+          sortPosition
+          title
+          description
+          isVisible
+        }
+      }`;
+
+    this.setState({ saveInProgress: true }, async () => {
+      const result = await API.graphql(
+        graphqlOperation(UpdatePhoto, {
+          id: photo.id,
+          sortPosition: photo.sortPosition,
+          title: photo.title,
+          description: photo.description,
+          isVisible: photo.isVisible
+        })
+      );
+      this.setState({ saveInProgress: false });
+      return result;
+    });
+  };
+
   onSortEnd = ({ oldIndex, newIndex }) => {
     this.setState({
       photos: arrayMove(this.state.photos, oldIndex, newIndex)
+    }, 
+    () => {
+        this.state.photos.forEach((photo, index) => {
+            photo.sortPosition = index
+            return this.savePhotoChanges(photo)
+        })
     });
   };
 

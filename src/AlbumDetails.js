@@ -1,14 +1,28 @@
 import React, { Component } from "react";
 import PhotosList from "./PhotosList";
 import S3ImageUpload from "./S3ImageUpload";
-import { Form, Button, Icon, Divider, Dropdown } from "semantic-ui-react";
+import {
+  Form,
+  Button,
+  Icon,
+  Divider,
+  Dropdown,
+  Sidebar,
+  Segment
+} from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
 
 class AlbumDetails extends Component {
   state = {
+    sidebarVisible: false,
     saveInProgress: false,
     hasUnsavedChanges: false
+  };
+
+  toggleSidebarVisibility = e => {
+    e.preventDefault();
+    this.setState({ sidebarVisible: !this.state.sidebarVisible });
   };
 
   saveAlbumChanges = async () => {
@@ -24,10 +38,10 @@ class AlbumDetails extends Component {
     this.setState({ saveInProgress: true }, async () => {
       const result = await API.graphql(
         graphqlOperation(UpdateAlbum, {
-          id: this.state.album.id,
-          name: this.state.album.name,
-          sortPosition: this.state.album.sortPosition,
-          isVisible: this.state.album.isVisible
+          id: this.state.albumId,
+          name: this.state.albumName,
+          sortPosition: this.state.albumSortPosition,
+          isVisible: this.state.albumIsVisible
         })
       );
       this.setState({ saveInProgress: false });
@@ -35,10 +49,32 @@ class AlbumDetails extends Component {
     });
   };
 
+  handleAlbumNameChange = e => {
+    this.setState({ albumName: e.target.value });
+  };
+
+  toggleAlbumVisibility = e => {
+    this.setState({ albumIsVisible: this.state.albumIsVisible ? false : true });
+  };
+
+  //   componentDidMount() {
+  //     this.setState({ album: this.props.album });
+  //   }
+
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.album !== this.props.album) {
-      this.setState({ album: this.props.album });
-    } else if (prevState.album && prevState.album !== this.state.album) {
+      this.setState({
+        album: this.props.album,
+        albumId: this.props.album.id,
+        albumName: this.props.album.name,
+        albumSortPosition: this.props.album.sortPosition,
+        albumIsVisible: this.props.album.isVisible
+      });
+    } else if (
+      prevState.albumName !== this.state.albumName ||
+      prevState.albumIsVisible !== this.state.albumIsVisible ||
+      prevState.album !== this.state.album
+    ) {
       this.setState({ hasUnsavedChanges: true });
     }
   }
@@ -49,7 +85,7 @@ class AlbumDetails extends Component {
       <div>
         <div className="title-bar-container">
           <div className="title-bar-title-container">
-            <h2>{this.props.album ? this.props.album.name : ""}</h2>
+            <h2>{this.state.albumName ? this.state.albumName : ""}</h2>
           </div>
           <div className="title-bar-actions-container">
             <NavLink to="/albums">
@@ -62,18 +98,27 @@ class AlbumDetails extends Component {
                 Albums
               </Button>
             </NavLink>
-            <S3ImageUpload albumId={this.props.album.id} />
             <Dropdown
               text="Actions&nbsp;&nbsp;&nbsp;"
               icon="content"
               floating
               button
               className="icon"
+              id="album-details-actions-dropdown"
             >
               <Dropdown.Menu>
-                <Dropdown.Item icon="attention" text="Important" />
-                <Dropdown.Item icon="comment" text="Announcement" />
-                <Dropdown.Item icon="conversation" text="Discussion" />
+                <Dropdown.Item>
+                  <S3ImageUpload albumId={this.props.album.id} />
+                </Dropdown.Item>
+                <Dropdown.Item>
+                  <Button
+                    className="pm-button"
+                    onClick={this.toggleSidebarVisibility}
+                  >
+                    <Icon name="pencil" />
+                    Edit
+                  </Button>
+                </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
             <Button
@@ -87,17 +132,86 @@ class AlbumDetails extends Component {
         </div>
         <Divider />
 
-        <PhotosList photos={this.props.album.photos.items} />
-        {this.props.hasMorePhotos && (
-          <Form.Button
-            onClick={this.props.loadMorePhotos}
-            icon="refresh"
-            disabled={this.props.loadingPhotos}
-            content={
-              this.props.loadingPhotos ? "Loading..." : "Load more photos"
-            }
-          />
-        )}
+        <div style={{ position: "relative" }}>
+          {this.state.sidebarVisible && (
+            <Button
+              circular
+              icon={"arrow left"}
+              className="pm-button--sidebar-toggle"
+              onClick={this.toggleSidebarVisibility}
+            />
+          )}
+          <Sidebar.Pushable as={Segment} className="pm-sidebar-container">
+            <Sidebar
+              as={Form}
+              animation="overlay"
+              icon="labeled"
+              vertical="true"
+              visible={this.state.sidebarVisible}
+              width="very wide"
+            >
+              <Form.Field>
+                <label>Name</label>
+                <input
+                  placeholder="Album Name"
+                  onChange={this.handleAlbumNameChange}
+                  value={this.state.albumName ? this.state.albumName : ""}
+                />
+              </Form.Field>
+
+              <Form.Field>
+                <label>Visibility</label>
+                <Button
+                  className="pm-button"
+                  toggle
+                  active={
+                    this.state.albumIsVisible
+                      ? this.state.albumIsVisible
+                      : false
+                  }
+                  onClick={this.toggleAlbumVisibility}
+                >
+                  {this.state.albumIsVisible ? "Visible" : "Hidden"}
+                </Button>
+              </Form.Field>
+              <div
+                style={{
+                  marginTop: "50px",
+                  display: "flex",
+                  justifyContent: "flex-end"
+                }}
+              >
+                <Button
+                  primary={this.state.hasUnsavedChanges}
+                  loading={this.state.saveInProgress}
+                  disabled={
+                    this.state.saveInProgress || !this.state.hasUnsavedChanges
+                  }
+                  onClick={this.saveAlbumChanges}
+                  size="medium"
+                  style={{ marginLeft: "10px" }}
+                  className={"pm-button"}
+                >
+                  Save
+                </Button>
+              </div>
+            </Sidebar>
+
+            <Sidebar.Pusher>
+              <PhotosList photos={this.props.album.photos.items} />
+              {this.props.hasMorePhotos && (
+                <Form.Button
+                  onClick={this.props.loadMorePhotos}
+                  icon="refresh"
+                  disabled={this.props.loadingPhotos}
+                  content={
+                    this.props.loadingPhotos ? "Loading..." : "Load more photos"
+                  }
+                />
+              )}
+            </Sidebar.Pusher>
+          </Sidebar.Pushable>
+        </div>
       </div>
     );
   }
