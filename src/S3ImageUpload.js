@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Form } from 'semantic-ui-react'
 import { Storage } from 'aws-amplify'
 import { v4 as uuid } from 'uuid'
+import EXIF from 'exif-js'
 
 class S3ImageUpload extends Component {
     constructor (props) {
@@ -9,20 +10,45 @@ class S3ImageUpload extends Component {
       this.state = { uploading: false }
     }
     onChange = async e => {
+    
+        const self = this
       const file = e.target.files[0]
-      const fileName = uuid()
-      this.setState({ uploading: true })
-      try {
-        const result = await Storage.put(fileName, file, {
-          customPrefix: { public: 'uploads/' },
-          metadata: { albumid: this.props.albumId }
-        })
-        console.log('Uploaded file: ', result)
-        this.setState({ uploading: false })
-      } catch(err) {
-        console.log(err)
-      }
+
+      let deviceMake
+      let deviceModel
+      let dateTime
+
+      EXIF.getData(file, async function() {
+        deviceMake = EXIF.getTag(this, "Make");
+        deviceModel = EXIF.getTag(this, "Model");
+        dateTime = EXIF.getTag(this, "DateTime")
+
+        const fileName = uuid()
+        self.setState({ uploading: true })
+        try {
+          const result = await Storage.put(fileName, file, {
+            customPrefix: { public: 'uploads/' },
+            metadata: { 
+                albumid: self.props.albumId,
+                deviceMake: deviceMake,
+                deviceModel: deviceModel,
+                dateTime: dateTime
+             }
+          })
+          console.log('Uploaded file: ', result)
+          self.setState({ uploading: false })
+        } catch(err) {
+          console.log(err)
+        }
+
+
+
+
+    });
+
+    
     }
+
     render () {
       return (
         <div>
