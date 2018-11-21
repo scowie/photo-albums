@@ -120,7 +120,7 @@ button.ui.primary.button.pm-button {
 
 .photo-drag-handle {
   width:100%;
-  height:35px;
+  height:50px;
   position:absolute;
   display:flex;
   justify-content:center;
@@ -159,17 +159,6 @@ button.ui.primary.button.pm-button {
   padding:0px;
 }
 
-.pm-image-thumbnail-grid-wrapper {
-  display:flex;
-  flex-wrap:wrap;
-}
-
-.pm-image-thumbnail-grid-item-container {
-  height:200px;
-  width:200px;
-  border:1px solid var(--color-ctx-10);
-}
-
 .pm-photo-sort-position {
   z-index:3;
   position:absolute;
@@ -182,7 +171,7 @@ button.ui.primary.button.pm-button {
   font-size:1.3rem;
 }
 
-.ui.card > .ui.image img {
+.ui.card.pm-thumbnail-photo-card img {
   border-top-left-radius:4px;
   border-top-right-radius:4px;
 }
@@ -206,6 +195,18 @@ button.ui.primary.button.pm-button {
 
 .pm-button.ui.active.toggle.button {
   background-color: var(--color-primary) !important;
+}
+
+#pm-album-photos-list {
+  border:none;
+  outline:none;
+  box-shadow: none;
+  padding:10px;
+}
+
+#pm-album-photos-list .pusher {
+  padding-top:5px;
+  padding-bottom:5px;
 }
 
 .pm-sidebar-container form {

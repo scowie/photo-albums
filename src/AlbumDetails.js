@@ -12,13 +12,21 @@ import {
 } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
+import { arrayMove } from "react-sortable-hoc";
 
 class AlbumDetails extends Component {
-  state = {
-    sidebarVisible: false,
-    saveInProgress: false,
-    hasUnsavedChanges: false
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      sidebarVisible: false,
+      saveInProgress: false,
+      hasUnsavedChanges: false
+    };
+    this.autoSaveAlbumPhotoSortPositions = this.autoSaveAlbumPhotoSortPositions.bind(
+      this
+    );
+  }
 
   toggleSidebarVisibility = e => {
     e.preventDefault();
@@ -49,6 +57,75 @@ class AlbumDetails extends Component {
     });
   };
 
+  onSortEnd = ({ oldIndex, newIndex }) => {
+    const updatedPhotos = arrayMove(this.state.albumPhotos, oldIndex, newIndex);
+    updatedPhotos.forEach((photo, index) => (photo.sortPosition = index));
+    this.setState({ albumPhotos: updatedPhotos });
+  };
+
+  handleSaveAlbumPhotoSortPositionsClick = async () => {
+    return await Promise.all(
+      this.state.albumPhotos.map(async (photo, index) => {
+        return await this.savePhotoChanges(photo);
+      })
+    );
+  };
+
+  savePhotoChanges = async photo => {
+    const UpdatePhoto = `mutation UpdatePhoto($id: ID!, $sortPosition: Int, $title: String, $description: String, $isVisible: Boolean) {
+        updatePhoto(input: {id: $id, sortPosition: $sortPosition, title: $title, description: $description, isVisible: $isVisible}) {
+          id
+          sortPosition
+          title
+          description
+          isVisible
+        }
+      }`;
+
+    this.setState({ saveInProgress: true }, async () => {
+      const result = await API.graphql(
+        graphqlOperation(UpdatePhoto, {
+          id: photo.id,
+          sortPosition: photo.sortPosition,
+          title: photo.title,
+          description: photo.description,
+          isVisible: photo.isVisible
+        })
+      );
+      this.setState({ saveInProgress: false });
+
+      return result;
+    });
+  };
+
+  autoSaveAlbumPhotoSortPositions = async photos => {
+    photos.forEach(photo => this.autoSavePhotoChanges(photo));
+  };
+
+  autoSavePhotoChanges = async photo => {
+    const UpdatePhoto = `mutation UpdatePhoto($id: ID!, $sortPosition: Int, $title: String, $description: String, $isVisible: Boolean) {
+        updatePhoto(input: {id: $id, sortPosition: $sortPosition, title: $title, description: $description, isVisible: $isVisible}) {
+          id
+          sortPosition
+          title
+          description
+          isVisible
+        }
+      }`;
+
+    const result = await API.graphql(
+      graphqlOperation(UpdatePhoto, {
+        id: photo.id,
+        sortPosition: photo.sortPosition,
+        title: photo.title,
+        description: photo.description,
+        isVisible: photo.isVisible
+      })
+    );
+
+    return result;
+  };
+
   handleAlbumNameChange = e => {
     this.setState({ albumName: e.target.value });
   };
@@ -57,25 +134,34 @@ class AlbumDetails extends Component {
     this.setState({ albumIsVisible: this.state.albumIsVisible ? false : true });
   };
 
-  //   componentDidMount() {
-  //     this.setState({ album: this.props.album });
-  //   }
-
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.album !== this.props.album) {
+    if (prevProps !== this.props) {
       this.setState({
-        album: this.props.album,
-        albumId: this.props.album.id,
-        albumName: this.props.album.name,
-        albumSortPosition: this.props.album.sortPosition,
-        albumIsVisible: this.props.album.isVisible
+        albumPhotos: this.props.album ? this.props.album.photos.items : null,
+        albumId: this.props.album ? this.props.album.id : null,
+        albumName: this.props.album ? this.props.album.name : null,
+        albumSortPosition: this.props.album
+          ? this.props.album.sortPosition
+          : null,
+        albumIsVisible: this.props.album ? this.props.album.isVisible : null
       });
+      if (prevProps.album && prevProps.album !== this.props.album) {
+        this.setState({ hasUnsavedChanges: true });
+      }
     } else if (
-      prevState.albumName !== this.state.albumName ||
-      prevState.albumIsVisible !== this.state.albumIsVisible ||
-      prevState.album !== this.state.album
+      (prevState.albumName && prevState.albumName !== this.state.albumName) ||
+      (prevState.albumIsVisible &&
+        prevState.albumIsVisible !== this.state.albumIsVisible) ||
+      (prevState.albumPhotos &&
+        prevState.albumPhotos !== this.state.albumPhotos)
     ) {
       this.setState({ hasUnsavedChanges: true });
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.state.hasUnsavedChanges) {
+      return this.autoSaveAlbumPhotoSortPositions(this.state.albumPhotos);
     }
   }
 
@@ -122,9 +208,15 @@ class AlbumDetails extends Component {
               </Dropdown.Menu>
             </Dropdown>
             <Button
+              loading={this.state.saveInProgress}
+              disabled={
+                this.state.saveInProgress || !this.state.hasUnsavedChanges
+              }
               size="medium"
               style={{ marginLeft: "10px" }}
               className={"pm-button"}
+              primary={this.state.hasUnsavedChanges}
+              onClick={this.handleSaveAlbumPhotoSortPositionsClick}
             >
               Save
             </Button>
@@ -141,7 +233,11 @@ class AlbumDetails extends Component {
               onClick={this.toggleSidebarVisibility}
             />
           )}
-          <Sidebar.Pushable as={Segment} className="pm-sidebar-container">
+          <Sidebar.Pushable
+            as={Segment}
+            id="pm-album-photos-list"
+            className="pm-sidebar-container"
+          >
             <Sidebar
               as={Form}
               animation="overlay"
@@ -198,7 +294,10 @@ class AlbumDetails extends Component {
             </Sidebar>
 
             <Sidebar.Pusher>
-              <PhotosList photos={this.props.album.photos.items} />
+              <PhotosList
+                photos={this.state.albumPhotos ? this.state.albumPhotos : []}
+                onSortEnd={this.onSortEnd.bind(this)}
+              />
               {this.props.hasMorePhotos && (
                 <Form.Button
                   onClick={this.props.loadMorePhotos}

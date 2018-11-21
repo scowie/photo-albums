@@ -5,8 +5,7 @@ import { S3Image } from "aws-amplify-react";
 import {
   SortableContainer,
   SortableElement,
-  SortableHandle,
-  arrayMove
+  SortableHandle
 } from "react-sortable-hoc";
 import { API, graphqlOperation } from "aws-amplify";
 
@@ -32,7 +31,7 @@ const DragHandle = SortableHandle(() => (
 ));
 
 const SortableItem = SortableElement(({ photo, sortIndex }) => (
-  <Card key={photo.thumbnail.key}>
+  <Card className="pm-thumbnail-photo-card" key={photo.thumbnail.key}>
     <DragHandle />
     <div className="pm-photo-sort-position">
       <span>{sortIndex + 1}</span>
@@ -72,7 +71,6 @@ const SortableList = SortableContainer(({ photos }) => (
 
 class PhotosList extends Component {
   state = {
-    photos: this.props.photos,
     uploadInProgress: false,
     saveInProgress: false,
     hasUnsavedChanges: false
@@ -104,46 +102,13 @@ class PhotosList extends Component {
     });
   };
 
-  onSortEnd = ({ oldIndex, newIndex }) => {
-    this.setState({
-      photos: arrayMove(this.state.photos, oldIndex, newIndex)
-    }, 
-    () => {
-        this.state.photos.forEach((photo, index) => {
-            photo.sortPosition = index
-            return this.savePhotoChanges(photo)
-        })
-    });
-  };
-
-  sortAlbums = () =>
-    this.setState({
-      photos: this.props.photos.sort(makeComparator("sortPosition"))
-    });
-
-  componentDidMount() {
-    this.sortAlbums();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.photos !== this.props.photos) {
-      this.setState({
-        photos: this.props.photos.sort(makeComparator("sortPosition"))
-      });
-    } else if (
-      prevState.photos !== this.state.photos &&
-      prevState.photos.length === this.state.photos.length
-    ) {
-      this.setState({ hasUnsavedChanges: true });
-    }
-  }
   render() {
     return (
       <div>
         <SortableList
-          photos={this.state.photos}
+          photos={this.props.photos.sort(makeComparator("sortPosition"))}
           axis={"xy"}
-          onSortEnd={this.onSortEnd}
+          onSortEnd={this.props.onSortEnd}
           useDragHandle={true}
         />
       </div>
