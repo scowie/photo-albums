@@ -17,29 +17,30 @@ class S3ImageUpload extends Component {
     let deviceModel;
     let dateTime;
 
-    return await EXIF.getData(file, async function() {
-      deviceMake = EXIF.getTag(this, "Make");
-      deviceModel = EXIF.getTag(this, "Model");
-      dateTime = EXIF.getTag(this, "DateTime");
-
-      const fileName = uuid();
-      self.setState({ uploading: true });
-      try {
-        const result = await Storage.put(fileName, file, {
-          customPrefix: { public: "uploads/" },
-          metadata: {
-            albumid: self.props.albumId,
-            deviceMake: deviceMake,
-            deviceModel: deviceModel,
-            dateTime: dateTime
-          }
-        });
-        console.log("Uploaded file: ", result);
-        self.setState({ uploading: false });
-      } catch (err) {
-        console.log(err);
-      }
-    });
+    return await self.setState({uploading: true}, async () => {
+        return await EXIF.getData(file, async function() {
+            deviceMake = EXIF.getTag(this, "Make");
+            deviceModel = EXIF.getTag(this, "Model");
+            dateTime = EXIF.getTag(this, "DateTime");
+      
+            const fileName = uuid();
+            try {
+              const result = await Storage.put(fileName, file, {
+                customPrefix: { public: "uploads/" },
+                metadata: {
+                  albumid: self.props.albumId,
+                  deviceMake: deviceMake,
+                  deviceModel: deviceModel,
+                  dateTime: dateTime
+                }
+              });
+              console.log("Uploaded file: ", result);
+              self.setState({ uploading: false });
+            } catch (err) {
+              console.log(err);
+            }
+          });
+    })
   };
 
   render() {
@@ -52,6 +53,7 @@ class S3ImageUpload extends Component {
           disabled={this.state.uploading}
           icon="file image outline"
           content={this.state.uploading ? "Uploading..." : "Add Image"}
+          loading={this.state.uploading}
         />
         <input
           id="add-image-file-input"

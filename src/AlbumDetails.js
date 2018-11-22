@@ -184,6 +184,7 @@ class AlbumDetails extends Component {
                 Albums
               </Button>
             </NavLink>
+            <S3ImageUpload albumId={this.props.album.id} />
             <Dropdown
               text="Actions&nbsp;&nbsp;&nbsp;"
               icon="content"
