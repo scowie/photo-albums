@@ -50,8 +50,7 @@ const SortableItem = SortableElement(({ photo, sortIndex }) => (
       </Card.Description>
     </Card.Content>
     <Card.Content extra>
-      <Icon name="user" />
-      10 Friends
+      {photo.deviceMake}&nbsp;{photo.deviceModel}
     </Card.Content>
   </Card>
 ));

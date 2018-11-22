@@ -17,6 +17,8 @@ const GetAlbum = `query GetAlbum($id: ID!, $nextTokenForPhotos: String) {
             sortPosition
             title
             description
+            deviceMake
+            deviceModel
             isVisible
             bucket
             fullsize {
