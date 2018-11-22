@@ -63,6 +63,7 @@ async function resize (bucketName, key) {
   }
 }
 function storePhotoInfo (item) {
+  console.log('item to store', item)
   const params = {
     Item: item,
     TableName: DYNAMODB_PHOTOS_TABLE_NAME
@@ -83,17 +84,22 @@ async function processRecord (record) {
   if (key.indexOf('uploads') !== 0) return
 
   const metadata = await getMetadata(bucketName, key)
+  console.log('found metadata', metadata)
   const sizes = await resize(bucketName, key)
   const id = uuidv4()
   const item = {
     id: id,
     owner: metadata.owner,
     photoAlbumId: metadata.albumid,
+    deviceMake: metadata.devicemake,
+    deviceModel: metadata.devicemodel,
+    dateTime: metadata.datetime,
     bucket: bucketName,
     thumbnail: sizes.thumbnail,
     fullsize: sizes.fullsize,
     createdAt: new Date().getTime()
   }
+  console.log('item to pass to storePhotoInfo', item)
   await storePhotoInfo(item)
 }
 exports.lambda_handler = async (event, context, callback) => {

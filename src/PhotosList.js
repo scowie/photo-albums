@@ -44,7 +44,7 @@ const SortableItem = SortableElement(({ photo, sortIndex }) => (
 
     <Card.Content>
       <Card.Header>{photo.title}</Card.Header>
-      <Card.Meta>Joined in 2016</Card.Meta>
+      <Card.Meta>{`${photo.fullsize.width} x ${photo.fullsize.height}`}</Card.Meta>
       <Card.Description>
         {photo.description}
       </Card.Description>

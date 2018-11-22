@@ -37,13 +37,13 @@ Resources:
     Type: AWS::Lambda::Permission
   PhotoProcessorFunction:
     Properties:
-      CodeUri: s3://cowie-cloudformation-templates/517658e2cfa61774168a4a5ebbac41df
+      CodeUri: s3://cowie-cloudformation-templates/bfdeac0448ed34e5e5cbc01d49d95a3b
       Environment:
         Variables:
           DYNAMODB_PHOTOS_TABLE_ARN:
             Ref: DynamoDBPhotosTableArn
-          THUMBNAIL_HEIGHT: 80
-          THUMBNAIL_WIDTH: 80
+          THUMBNAIL_HEIGHT: 220
+          THUMBNAIL_WIDTH: 300
       Handler: app.lambda_handler
       Role:
         Fn::GetAtt:

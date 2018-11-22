@@ -78,17 +78,21 @@ Next, run the following command to package our Lambda function to S3:
 ```bash
 sam package \
     --template-file template.yaml \
-    --output-template-file packaged.yaml \
-    --s3-bucket REPLACE_THIS_WITH_YOUR_S3_BUCKET_NAME
+    --output-template-file packaged.yml \
+    --s3-bucket cowie-cloudformation-templates
 ```
 
 Next, the following command will create a Cloudformation Stack and deploy your SAM resources.
 
 ```bash
+
 sam deploy \
-    --template-file packaged.yaml \
-    --stack-name photo_processor \
-    --capabilities CAPABILITY_IAM
+    --template-file packaged.yml \
+    --stack-name PhotoAlbumsProcessorSAMStack \
+    --capabilities CAPABILITY_IAM \
+    --parameter-overrides \
+    --region us-east-1 \
+    S3UserfilesBucketArn=arn:aws:s3:::photoalbums76f3acc6a3cb48d9911ad6df8f67351e
 ```
 
 > **See [Serverless Application Model (SAM) HOWTO Guide](https://github.com/awslabs/serverless-application-model/blob/master/HOWTO.md) for more details in how to get started.**

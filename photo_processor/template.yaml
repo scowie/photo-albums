@@ -55,8 +55,8 @@ Resources:
             Runtime: nodejs8.10
             Environment:
                 Variables:
-                    THUMBNAIL_WIDTH: 80
-                    THUMBNAIL_HEIGHT: 80
+                    THUMBNAIL_WIDTH: 300
+                    THUMBNAIL_HEIGHT: 220
                     DYNAMODB_PHOTOS_TABLE_ARN: !Ref DynamoDBPhotosTableArn
     BucketPermission:
         Type: AWS::Lambda::Permission
