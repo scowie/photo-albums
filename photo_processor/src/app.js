@@ -83,9 +83,9 @@ async function processRecord (record) {
 
   if (key.indexOf('uploads') !== 0) return
 
-  const metadata = await getMetadata(bucketName, key)
+  // const metadata = await getMetadata(bucketName, key)
   console.log('found metadata', metadata)
-  const sizes = await resize(bucketName, key)
+  // const sizes = await resize(bucketName, key)
   const id = uuidv4()
   const item = {
     id: id,
@@ -100,7 +100,7 @@ async function processRecord (record) {
     createdAt: new Date().getTime()
   }
   console.log('item to pass to storePhotoInfo', item)
-  await storePhotoInfo(item)
+  // await storePhotoInfo(item)
 }
 exports.lambda_handler = async (event, context, callback) => {
   try {

@@ -37,7 +37,7 @@ Resources:
     Type: AWS::Lambda::Permission
   PhotoProcessorFunction:
     Properties:
-      CodeUri: s3://cowie-cloudformation-templates/bfdeac0448ed34e5e5cbc01d49d95a3b
+      CodeUri: s3://cowie-cloudformation-templates/21dcaee7612292c167be190e9e5e3efd
       Environment:
         Variables:
           DYNAMODB_PHOTOS_TABLE_ARN:
