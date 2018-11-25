@@ -13,16 +13,8 @@ const GetPhoto = `query GetPhoto($id: ID!) {
       description
       isVisible
       bucket
-      fullsize {
-          width
-          height
-          key
-      }
-      thumbnail {
-          width
-          height
-          key
-      }
+      fullsizeKey
+      thumbnailKey
     }
   }
 `

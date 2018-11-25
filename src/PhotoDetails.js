@@ -194,7 +194,7 @@ class PhotoDetails extends Component {
             <Sidebar.Pusher>
               <div className="pm-fullsize-image-container">
                 <S3Image
-                  imgKey={this.props.photo.fullsize.key.replace("public/", "")}
+                  imgKey={this.props.photo.fullsizeKey.replace("public/", "")}
                 />
               </div>
             </Sidebar.Pusher>

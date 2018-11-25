@@ -31,20 +31,21 @@ const DragHandle = SortableHandle(() => (
 ));
 
 const SortableItem = SortableElement(({ photo, sortIndex }) => (
-  <Card className="pm-thumbnail-photo-card" key={photo.thumbnail.key}>
+  <Card className="pm-thumbnail-photo-card" key={photo.thumbnailKey}>
     <DragHandle />
     <div className="pm-photo-sort-position">
       <span>{sortIndex + 1}</span>
     </div>
     <NavLink to={`/albums/${photo.album.id}/photos/${photo.id}`}>
     <Image>
-      <S3Image imgKey={photo.thumbnail.key.replace("public/", "")} />
+        {photo.thumbnailKey}
+      {/* <S3Image imgKey={photo.thumbnailKey.replace("public/", "")} /> */}
     </Image>
     </NavLink>
 
     <Card.Content>
       <Card.Header>{photo.title}</Card.Header>
-      <Card.Meta>{`${photo.fullsize.width} x ${photo.fullsize.height}`}</Card.Meta>
+      <Card.Meta></Card.Meta>
       <Card.Description>
         {photo.description}
       </Card.Description>
@@ -59,7 +60,7 @@ const SortableList = SortableContainer(({ photos }) => (
   <Card.Group>
     {photos.map((photo, index) => (
       <SortableItem
-        key={`photo-${photo.thumbnail.key}`}
+        key={`photo-${photo.thumbnailKey}`}
         index={index}
         sortIndex={index}
         photo={photo}

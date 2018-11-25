@@ -158,6 +158,19 @@ class AlbumDetails extends Component {
       this.setState({ hasUnsavedChanges: true });
     }
   }
+  
+  componentDidMount() {
+      
+    this.setState({
+        albumPhotos: this.props.album ? this.props.album.photos.items : null,
+        albumId: this.props.album ? this.props.album.id : null,
+        albumName: this.props.album ? this.props.album.name : null,
+        albumSortPosition: this.props.album
+          ? this.props.album.sortPosition
+          : null,
+        albumIsVisible: this.props.album ? this.props.album.isVisible : null
+      });
+  }
 
   componentWillUnmount() {
     if (this.state.hasUnsavedChanges) {
@@ -184,7 +197,9 @@ class AlbumDetails extends Component {
                 Albums
               </Button>
             </NavLink>
-            <S3ImageUpload albumId={this.props.album.id} />
+            <S3ImageUpload 
+                albumId={this.props.album.id} 
+                numPhotos={this.props.album.photos.items.length}/>
             <Dropdown
               text="Actions&nbsp;&nbsp;&nbsp;"
               icon="content"
@@ -299,7 +314,7 @@ class AlbumDetails extends Component {
                 photos={this.state.albumPhotos ? this.state.albumPhotos : []}
                 onSortEnd={this.onSortEnd.bind(this)}
               />
-              {this.props.hasMorePhotos && (
+              {/* {this.props.hasMorePhotos && (
                 <Form.Button
                   onClick={this.props.loadMorePhotos}
                   icon="refresh"
@@ -308,7 +323,7 @@ class AlbumDetails extends Component {
                     this.props.loadingPhotos ? "Loading..." : "Load more photos"
                   }
                 />
-              )}
+              )} */}
             </Sidebar.Pusher>
           </Sidebar.Pushable>
         </div>
