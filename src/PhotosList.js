@@ -38,8 +38,7 @@ const SortableItem = SortableElement(({ photo, sortIndex }) => (
     </div>
     <NavLink to={`/albums/${photo.album.id}/photos/${photo.id}`}>
     <Image>
-        {photo.thumbnailKey}
-      {/* <S3Image imgKey={photo.thumbnailKey.replace("public/", "")} /> */}
+      <S3Image imgKey={photo.thumbnailKey.replace("public/", "")} />
     </Image>
     </NavLink>
 

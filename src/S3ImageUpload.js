@@ -71,7 +71,7 @@ class S3ImageUpload extends Component {
         ctx.drawImage(img, 0, 0);
 
         var MAX_WIDTH = 300;
-        var MAX_HEIGHT = 300;
+        var MAX_HEIGHT = 1000;
         var width = img.width;
         var height = img.height;
 
