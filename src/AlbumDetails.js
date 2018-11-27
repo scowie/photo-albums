@@ -8,7 +8,8 @@ import {
   Divider,
   Dropdown,
   Sidebar,
-  Segment
+  Segment,
+  Loader
 } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
@@ -342,16 +343,20 @@ class AlbumDetails extends Component {
           className="icon"
           id="album-details-uploading-dropdown"
           open
+          direction='left'
         >
           <Dropdown.Menu>
-            <Dropdown.Item>{this.state.fileUploading}</Dropdown.Item>
+            <Dropdown.Item>
+              <span>{this.state.fileUploading}</span>
+              <Loader active inline size="tiny" />
+              </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       );
     } else {
       return (
         <Dropdown
-          text={"Actions"}
+          text={'Actions'}
           icon={"content"}
           floating
           button
@@ -367,8 +372,7 @@ class AlbumDetails extends Component {
                   }
                   disabled={this.state.uploading}
                   icon="file image outline"
-                  content={this.state.uploading ? "Uploading..." : "Add Image"}
-                  loading={this.state.uploading}
+                  content={"Add Image"}
                 />
                 <input
                   id="add-image-file-input"

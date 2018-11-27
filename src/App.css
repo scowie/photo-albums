@@ -230,3 +230,11 @@ button.ui.primary.button.pm-button {
 #album-details-actions-dropdown button:hover {
   background: var(--color-ctx-11);
 }
+
+#album-details-actions-dropdown > div.text {
+  margin-right:15px;
+}
+
+#album-details-uploading-dropdown span {
+  margin-right:20px;
+}
