@@ -17,7 +17,6 @@ import { Storage } from "aws-amplify";
 import { v4 as uuid } from "uuid";
 import EXIF from "exif-js";
 
-
 const NewPhoto = `mutation NewPhoto(
   $bucket: String!, 
   $id: ID, 
@@ -63,6 +62,7 @@ class AlbumDetails extends Component {
     super(props);
 
     this.state = {
+      fileUploading: null,
       uploading: false,
       sidebarVisible: false,
       saveInProgress: false,
@@ -84,52 +84,52 @@ class AlbumDetails extends Component {
     const self = this;
     const file = e.target.files[0];
 
-    const reader = new FileReader();
-    reader.onload = event => {
-      var img = new Image();
-      img.onload = function() {
-        var canvas = document.createElement("canvas");
-        var ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0);
+    self.setState({ uploading: true, fileUploading: file.name }, async () => {
+      debugger;
+      const reader = new FileReader();
+      reader.onload = event => {
+        var img = new Image();
+        img.onload = function() {
+          var canvas = document.createElement("canvas");
+          var ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
 
-        var MAX_WIDTH = 300;
-        var MAX_HEIGHT = 1000;
-        var width = img.width;
-        var height = img.height;
+          var MAX_WIDTH = 300;
+          var MAX_HEIGHT = 1000;
+          var width = img.width;
+          var height = img.height;
 
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
           }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-        canvas.width = width;
-        canvas.height = height;
+          canvas.width = width;
+          canvas.height = height;
 
-        ctx.drawImage(img, 0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
 
-        const makeThumbnailFile = new Promise((resolve, reject) => {
-          ctx.canvas.toBlob(
-            blob => {
-              const thumbnailFile = new File([blob], uuid(), {
-                type: "image/jpeg",
-                lastModified: Date.now()
-              });
-              resolve(thumbnailFile);
-            },
-            "image/jpeg",
-            1
-          );
-        });
+          const makeThumbnailFile = new Promise((resolve, reject) => {
+            ctx.canvas.toBlob(
+              blob => {
+                const thumbnailFile = new File([blob], uuid(), {
+                  type: "image/jpeg",
+                  lastModified: Date.now()
+                });
+                resolve(thumbnailFile);
+              },
+              "image/jpeg",
+              1
+            );
+          });
 
-        makeThumbnailFile.then(async thumbnailFile => {
-
-          return await self.setState({ uploading: true }, async () => {
+          makeThumbnailFile.then(async thumbnailFile => {
             return await EXIF.getData(file, async function() {
               const deviceMake = EXIF.getTag(this, "Make");
               const deviceModel = EXIF.getTag(this, "Model");
@@ -172,13 +172,13 @@ class AlbumDetails extends Component {
               }
             });
           });
-        });
+        };
+
+        img.src = reader.result;
       };
 
-      img.src = reader.result;
-    };
-
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    });
   };
 
   toggleSidebarVisibility = e => {
@@ -311,23 +311,86 @@ class AlbumDetails extends Component {
       this.setState({ hasUnsavedChanges: true });
     }
   }
-  
+
   componentDidMount() {
-      
     this.setState({
-        albumPhotos: this.props.album ? this.props.album.photos.items : null,
-        albumId: this.props.album ? this.props.album.id : null,
-        albumName: this.props.album ? this.props.album.name : null,
-        albumSortPosition: this.props.album
-          ? this.props.album.sortPosition
-          : null,
-        albumIsVisible: this.props.album ? this.props.album.isVisible : null
-      });
+      albumPhotos: this.props.album ? this.props.album.photos.items : null,
+      albumId: this.props.album ? this.props.album.id : null,
+      albumName: this.props.album ? this.props.album.name : null,
+      albumSortPosition: this.props.album
+        ? this.props.album.sortPosition
+        : null,
+      albumIsVisible: this.props.album ? this.props.album.isVisible : null
+    });
   }
 
   componentWillUnmount() {
     if (this.state.hasUnsavedChanges) {
       return this.autoSaveAlbumPhotoSortPositions(this.state.albumPhotos);
+    }
+  }
+
+  getDropdown() {
+    if (this.state.uploading) {
+      return (
+        <Dropdown
+          text={"Uploading..."}
+          icon={null}
+          floating
+          loading
+          button
+          className="icon"
+          id="album-details-uploading-dropdown"
+          open
+        >
+          <Dropdown.Menu>
+            <Dropdown.Item>{this.state.fileUploading}</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+      );
+    } else {
+      return (
+        <Dropdown
+          text={"Actions"}
+          icon={"content"}
+          floating
+          button
+          className="icon"
+          id="album-details-actions-dropdown"
+        >
+          <Dropdown.Menu>
+            <Dropdown.Item>
+              <div>
+                <Form.Button
+                  onClick={() =>
+                    document.getElementById("add-image-file-input").click()
+                  }
+                  disabled={this.state.uploading}
+                  icon="file image outline"
+                  content={this.state.uploading ? "Uploading..." : "Add Image"}
+                  loading={this.state.uploading}
+                />
+                <input
+                  id="add-image-file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={this.onChange}
+                  style={{ display: "none" }}
+                />
+              </div>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Button
+                className="pm-button"
+                onClick={this.toggleSidebarVisibility}
+              >
+                <Icon name="pencil" />
+                Edit
+              </Button>
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+      );
     }
   }
 
@@ -350,57 +413,13 @@ class AlbumDetails extends Component {
                 Albums
               </Button>
             </NavLink>
-            <div>
-        <Form.Button
-          onClick={() =>
-            document.getElementById("add-image-file-input").click()
-          }
-          disabled={this.state.uploading}
-          icon="file image outline"
-          content={this.state.uploading ? "Uploading..." : "Add Image"}
-          loading={this.state.uploading}
-        />
-        <input
-          id="add-image-file-input"
-          type="file"
-          accept="image/*"
-          onChange={this.onChange}
-          style={{ display: "none" }}
-        />
-      </div>
-            {/* <S3ImageUpload 
-                albumId={this.props.album.id} 
-                numPhotos={this.props.album.photos.items.length}/> */}
-            <Dropdown
-              text="Actions&nbsp;&nbsp;&nbsp;"
-              icon="content"
-              floating
-              button
-              className="icon"
-              id="album-details-actions-dropdown"
-            >
-              <Dropdown.Menu>
-                <Dropdown.Item>
-                  {/* <S3ImageUpload albumId={this.props.album.id} /> */}
-                </Dropdown.Item>
-                <Dropdown.Item>
-                  <Button
-                    className="pm-button"
-                    onClick={this.toggleSidebarVisibility}
-                  >
-                    <Icon name="pencil" />
-                    Edit
-                  </Button>
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
+            {this.getDropdown()}
             <Button
               loading={this.state.saveInProgress}
               disabled={
                 this.state.saveInProgress || !this.state.hasUnsavedChanges
               }
               size="medium"
-              style={{ marginLeft: "10px" }}
               className={"pm-button"}
               primary={this.state.hasUnsavedChanges}
               onClick={this.handleSaveAlbumPhotoSortPositionsClick}
