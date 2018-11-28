@@ -63,7 +63,8 @@ class AlbumDetails extends Component {
     super(props);
 
     this.state = {
-      filesUploading: null,
+      filesActivelyUploading: {},
+      filesToBeUploaded: null,
       uploading: false,
       sidebarVisible: false,
       saveInProgress: false,
@@ -74,19 +75,26 @@ class AlbumDetails extends Component {
     );
   }
 
+  cleanFileName(name) {
+    let cleanedName = name.replace(" ", "")
+    cleanedName = cleanedName.replace(".", "")
+    return cleanedName
+  }
+
   onChange = async e => {
-    // 1.  get the file
-    // 2.  read the file with FileReader
-    // 3.  create a new Image for thumbnail
-    // 4.  make a file out of the image blob
-    // 5.  get exif data
-    // 6.  put files to s3
-    // 7.  graphQL createPhoto (dynamo db entry)
+
     const self = this;
     const file = e.target.files[0];
     const files = Array.from(e.target.files);
+  
+    let uploadingFiles = {}
+    files.forEach(f => {
+      // let fName = f.name.replace(" ", "")
+      // fName = fName.replace(".", "")
+      uploadingFiles[this.cleanFileName(f.name)] = true
+    })
 
-    self.setState({ uploading: true, filesUploading: files }, async () => {
+    self.setState({ uploading: true, filesToBeUploaded: files, filesActivelyUploading: uploadingFiles }, async () => {
       files.forEach(file => {
         const reader = new FileReader();
         reader.onload = event => {
@@ -168,7 +176,12 @@ class AlbumDetails extends Component {
                     })
                   );
   
-                  return self.setState({ uploading: false });
+                  
+                  const updatedFilesActivelyUploading = Object.assign({}, self.state.filesActivelyUploading)
+                  // let fName = file.name.replace(" ", "")
+                  // fName = fName.replace(".", "")
+                  updatedFilesActivelyUploading[self.cleanFileName(file.name)] = false
+                  return self.setState({filesActivelyUploading: updatedFilesActivelyUploading})
                 } catch (err) {
                   console.log(err);
                 }
@@ -182,7 +195,9 @@ class AlbumDetails extends Component {
         reader.readAsDataURL(file);
 
       })
+      
     });    
+    // self.setState({ uploading: false });
   };
 
   toggleSidebarVisibility = e => {
@@ -349,11 +364,12 @@ class AlbumDetails extends Component {
           direction='left'
         >
           <Dropdown.Menu>
-            {this.state.filesUploading && this.state.filesUploading.map(f => {
+            {this.state.filesToBeUploaded && this.state.filesToBeUploaded.map(f => {
               return (
                 <Dropdown.Item key={f.name}>
               <span>{f.name}</span>
-              <Loader active inline size="tiny" />
+              <Loader active={this.state.filesActivelyUploading[this.cleanFileName(f.name)]} inline size="tiny" />
+              {!this.state.filesActivelyUploading[this.cleanFileName(f.name)] && <Icon color={"green"} name="check circle outline" /> }
               </Dropdown.Item>
               )
             })}
@@ -381,7 +397,7 @@ class AlbumDetails extends Component {
                   }
                   disabled={this.state.uploading}
                   icon="file image outline"
-                  content={"Add Image"}
+                  content={"Add Images"}
                 />
                 <input
                   id="add-image-file-input"
