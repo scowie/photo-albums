@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { API, graphqlOperation } from "aws-amplify";
-import { List, Segment, Button, Input, Icon} from "semantic-ui-react";
+import { List, Segment, Button, Input, Icon } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import {
   SortableContainer,
@@ -24,16 +24,18 @@ function makeComparator(key, order = "asc") {
   };
 }
 
-const DragHandle = SortableHandle(() => <div className={"album-drag-handle"}><Icon disabled name={"bars"}></Icon></div>); 
+const DragHandle = SortableHandle(() => (
+  <div className={"album-drag-handle"}>
+    <Icon disabled name={"bars"} />
+  </div>
+));
 
 const SortableItem = SortableElement(({ album }) => (
   <List.Item key={`album-${album.id}`}>
     <NavLink to={`/albums/${album.id}`}>
       <Segment className="album-segment">
         <DragHandle />
-        <div className={"album-segment__main-content"}>
-          {album.name}
-        </div>
+        <div className={"album-segment__main-content"}>{album.name}</div>
       </Segment>
     </NavLink>
   </List.Item>
@@ -43,7 +45,11 @@ const SortableList = SortableContainer(({ albums }) => {
   return (
     <List>
       {albums.map((album, index) => (
-        <SortableItem key={`album-${album.sortPosition}`} index={index} album={album} />
+        <SortableItem
+          key={`album-${album.sortPosition}`}
+          index={index}
+          album={album}
+        />
       ))}
     </List>
   );
@@ -77,28 +83,27 @@ class AlbumsList extends Component {
         }
       }`;
 
-      this.setState({createInProgress: true}, async () => {
-        
-        const result = await API.graphql(
-            graphqlOperation(NewAlbum, {
-              name: this.state.newAlbumName,
-              sortPosition: this.props.albums.length
-            })
-          );
+    this.setState({ createInProgress: true }, async () => {
+      const result = await API.graphql(
+        graphqlOperation(NewAlbum, {
+          name: this.state.newAlbumName,
+          sortPosition: this.props.albums.length
+        })
+      );
 
-        this.setState({createInProgress: false})
-        this.setState({ newAlbumName: "" });
-        console.info(`Created album with id ${result.data.createAlbum.id}`);
-      })
+      this.setState({ createInProgress: false, newAlbumName: "" });
+    });
   };
 
   handleSaveAllAlbumChanges = async () => {
-    this.setState({saveInProgress: true}, async () => {
-      await Promise.all(this.state.albums.map(async (album, index) => {
-        await this.saveAlbumChanges(album.id, index)
-      }))
-      this.setState({saveInProgress: false})
-    })
+    this.setState({ saveInProgress: true }, async () => {
+      await Promise.all(
+        this.state.albums.map(async (album, index) => {
+          await this.saveAlbumChanges(album.id, index);
+        })
+      );
+      this.setState({ saveInProgress: false });
+    });
   };
 
   saveAlbumChanges = async (albumId, albumSortPosition) => {
@@ -115,13 +120,16 @@ class AlbumsList extends Component {
         sortPosition: albumSortPosition
       })
     );
-    console.log(result);
+  
     return result;
   };
 
-  sortAlbums = () => this.setState({albums: this.props.albums.sort(makeComparator("sortPosition"))});
+  sortAlbums = () =>
+    this.setState({
+      albums: this.props.albums.sort(makeComparator("sortPosition"))
+    });
 
-  componentDidMount(){
+  componentDidMount() {
     this.sortAlbums();
   }
 
@@ -129,9 +137,12 @@ class AlbumsList extends Component {
     if (prevProps.albums !== this.props.albums) {
       this.setState({
         albums: this.props.albums.sort(makeComparator("sortPosition"))
-      })
-    } else if (prevState.albums !== this.state.albums && prevState.albums.length === this.state.albums.length) {
-      this.setState({hasUnsavedChanges: true})
+      });
+    } else if (
+      prevState.albums !== this.state.albums &&
+      prevState.albums.length === this.state.albums.length
+    ) {
+      this.setState({ hasUnsavedChanges: true });
     }
   }
 
@@ -144,33 +155,46 @@ class AlbumsList extends Component {
           </div>
           <div className="title-bar-actions-container">
             <Input
-                className="pm-input"
+              className="pm-input"
               size="small"
               type={"text"}
               placeholder={"New Gallery Name"}
               action={{
                 content: "Create",
                 onClick: this.handleNewGallerySubmit,
-                disabled: !this.state.newAlbumName.length > 0 || this.state.createInProgress,
+                disabled:
+                  !this.state.newAlbumName.length > 0 ||
+                  this.state.createInProgress,
                 primary: this.state.newAlbumName.length > 0,
                 loading: this.state.createInProgress,
-                className: 'pm-button'
+                className: "pm-button"
               }}
               name={"New Gallery"}
               value={this.state.newAlbumName}
               onChange={this.handleNewGalleryInputChange}
             />
-            <Button 
+            <Button
               primary={this.state.hasUnsavedChanges}
-              loading={this.state.saveInProgress} 
-              disabled={this.state.createInProgress || this.state.saveInProgress || !this.state.hasUnsavedChanges} 
-              size="medium" 
-              onClick={this.handleSaveAllAlbumChanges} 
-              style={{marginLeft:'10px'}}
-              className={"pm-button"}>Save</Button>
+              loading={this.state.saveInProgress}
+              disabled={
+                this.state.createInProgress ||
+                this.state.saveInProgress ||
+                !this.state.hasUnsavedChanges
+              }
+              size="medium"
+              onClick={this.handleSaveAllAlbumChanges}
+              style={{ marginLeft: "10px" }}
+              className={"pm-button"}
+            >
+              Save
+            </Button>
           </div>
         </div>
-        <SortableList albums={this.state.albums} onSortEnd={this.onSortEnd} useDragHandle={true}/>
+        <SortableList
+          albums={this.state.albums}
+          onSortEnd={this.onSortEnd}
+          useDragHandle={true}
+        />
       </div>
     );
   }

@@ -37,17 +37,15 @@ const SortableItem = SortableElement(({ photo, sortIndex }) => (
       <span>{sortIndex + 1}</span>
     </div>
     <NavLink to={`/albums/${photo.album.id}/photos/${photo.id}`}>
-    <Image>
-      <S3Image imgKey={photo.thumbnailKey.replace("public/", "")} />
-    </Image>
+      <Image>
+        <S3Image imgKey={photo.thumbnailKey.replace("public/", "")} />
+      </Image>
     </NavLink>
 
     <Card.Content>
       <Card.Header>{photo.title}</Card.Header>
-      <Card.Meta></Card.Meta>
-      <Card.Description>
-        {photo.description}
-      </Card.Description>
+      <Card.Meta />
+      <Card.Description>{photo.description}</Card.Description>
     </Card.Content>
     <Card.Content extra>
       {photo.deviceMake}&nbsp;{photo.deviceModel}

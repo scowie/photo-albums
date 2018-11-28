@@ -18,10 +18,10 @@ class PhotoDetails extends Component {
     saveInProgress: false
   };
 
-  toggleSidebarVisibility = e => { 
-    e.preventDefault()
+  toggleSidebarVisibility = e => {
+    e.preventDefault();
     this.setState({ sidebarVisible: !this.state.sidebarVisible });
-  }
+  };
 
   savePhotoChanges = async () => {
     const UpdatePhoto = `mutation UpdatePhoto($id: ID!, $sortPosition: Int, $title: String, $description: String, $isVisible: Boolean) {
@@ -104,20 +104,23 @@ class PhotoDetails extends Component {
               <Button
                 className="pm-button"
                 onClick={this.toggleSidebarVisibility}
-              ><Icon name="pencil" />
-              Edit
+              >
+                <Icon name="pencil" />
+                Edit
               </Button>
             </NavLink>
           </div>
         </div>
         <Divider />
         <div style={{ position: "relative" }}>
-          {this.state.sidebarVisible && <Button
-            circular
-            icon={"arrow left"}
-            className="pm-button--sidebar-toggle"
-            onClick={this.toggleSidebarVisibility}
-          />}
+          {this.state.sidebarVisible && (
+            <Button
+              circular
+              icon={"arrow left"}
+              className="pm-button--sidebar-toggle"
+              onClick={this.toggleSidebarVisibility}
+            />
+          )}
           <Sidebar.Pushable as={Segment} className="pm-sidebar-container">
             <Sidebar
               as={Form}
