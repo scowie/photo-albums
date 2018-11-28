@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import PhotosList from "./PhotosList";
-// import S3ImageUpload from "./S3ImageUpload";
 import {
   Form,
   Button,
@@ -68,6 +67,7 @@ class AlbumDetails extends Component {
       uploading: false,
       sidebarVisible: false,
       saveInProgress: false,
+      deleteInProgress: false,
       hasUnsavedChanges: false
     };
     this.autoSaveAlbumPhotoSortPositions = this.autoSaveAlbumPhotoSortPositions.bind(
@@ -266,6 +266,25 @@ class AlbumDetails extends Component {
     });
   };
 
+  deletePhoto = async () => {
+    const DeletePhoto = `mutation DeletePhoto($id: ID!) {
+        deletePhoto(input: {id: $id}) {
+          id
+        }
+      }`;
+
+    this.setState({ deleteInProgress: true }, async () => {
+      const result = await API.graphql(
+        graphqlOperation(DeletePhoto, {
+          id: this.state.albumPhotos[0].id
+        })
+      );
+      this.setState({ deleteInProgress: false });
+
+      return result;
+    });
+  };
+
   autoSaveAlbumPhotoSortPositions = async photos => {
     photos.forEach(photo => this.autoSavePhotoChanges(photo));
   };
@@ -412,6 +431,15 @@ class AlbumDetails extends Component {
               >
                 <Icon name="pencil" />
                 Edit
+              </Button>
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <Button
+                className="pm-button"
+                onClick={this.deletePhoto}
+              >
+                <Icon name="trash" />
+                Delete
               </Button>
             </Dropdown.Item>
           </Dropdown.Menu>

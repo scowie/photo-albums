@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import AlbumDetails from "./AlbumDetails";
-import { graphqlOperation } from "aws-amplify";
+import { API, graphqlOperation } from "aws-amplify";
 import { Connect } from "aws-amplify-react";
 
 const GetAlbum = `query GetAlbum($id: ID!, $nextTokenForPhotos: String) {
@@ -50,12 +50,51 @@ const SubscribeToNewPhotos = `
   }
 `;
 
+const SubscribeToDeletePhoto = `
+  subscription OnDeletePhoto {
+    onDeletePhoto {
+        id
+    }
+  }
+`;
+
+// Subscribe to creation of Todo
+// const newPhotoSubscription = API.graphql(
+//   graphqlOperation(SubscribeToNewPhotos)
+// ).subscribe({
+//   next: (photo) => console.log(todoData)
+// });
+
 class AlbumDetailsLoader extends Component {
   constructor(props) {
     super(props);
     this.state = {
       nextTokenForPhotos: null
     };
+  }
+
+  getAlbum() {
+    return API.graphql(graphqlOperation(GetAlbum, {
+      id: this.props.id,
+      nextTokenForPhotos: this.state.nextTokenForPhotos
+    })).then(resp => {
+      return resp.data.getAlbum
+    });
+  }
+
+  componentDidMount() {
+    this.getAlbum().then(album => {
+      this.setState({album: album})
+    })
+  }
+
+  componentDidUpdate(prevProps) {
+    if(prevProps != this.props) {
+      this.getAlbum().then(album => {
+        this.setState({album: album})
+      })
+    }
+    
   }
 
   onNewPhoto = (prevQuery, newData) => {
@@ -67,32 +106,32 @@ class AlbumDetailsLoader extends Component {
   };
 
   render() {
-    if (this.props.id) {
       return (
-        <Connect
-          query={graphqlOperation(GetAlbum, {
-            id: this.props.id,
-            nextTokenForPhotos: this.state.nextTokenForPhotos
-          })}
-          subscription={graphqlOperation(SubscribeToNewPhotos)}
-          onSubscriptionMsg={this.onNewPhoto}
-        >
-          {({ data, loading, errors }) => {
-            if (loading) {
-              return <div>Loading...</div>;
-            }
-            if (!data.getAlbum) return;
+        // <Connect
+        //   query={graphqlOperation(GetAlbum, {
+        //     id: this.props.id,
+        //     nextTokenForPhotos: this.state.nextTokenForPhotos
+        //   })}
+        //   subscription={graphqlOperation(SubscribeToNewPhotos)}
+        //   onSubscriptionMsg={this.onNewPhoto}
+        // >
+        //   {({ data, loading, errors }) => {
+        //     if (loading) {
+        //       return <div>Loading...</div>;
+        //     }
+        //     if (!data.getAlbum) return;
 
-            if (data.getAlbum.photos && data.getAlbum.photos.nextToken) {
-              this.setState({
-                nextTokenForPhotos: data.getAlbum.photos.nextToken
-              });
-            }
-            return <AlbumDetails album={data.getAlbum} />;
-          }}
-        </Connect>
+        //     if (data.getAlbum.photos && data.getAlbum.photos.nextToken) {
+        //       this.setState({
+        //         nextTokenForPhotos: data.getAlbum.photos.nextToken
+        //       });
+        //     }
+        //     return <AlbumDetails album={data.getAlbum} />;
+        //   }}
+        // </Connect>
+        <AlbumDetails album={this.state.album} />
       );
-    }
+    
   }
 }
 
