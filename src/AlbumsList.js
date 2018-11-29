@@ -120,7 +120,7 @@ class AlbumsList extends Component {
         sortPosition: albumSortPosition
       })
     );
-  
+
     return result;
   };
 

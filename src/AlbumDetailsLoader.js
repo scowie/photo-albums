@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import AlbumDetails from "./AlbumDetails";
 import { API, graphqlOperation } from "aws-amplify";
-import { Connect } from "aws-amplify-react";
+import _ from "lodash";
 
 const GetAlbum = `query GetAlbum($id: ID!, $nextTokenForPhotos: String) {
     getAlbum(id: $id) {
@@ -58,13 +58,6 @@ const SubscribeToDeletePhoto = `
   }
 `;
 
-// Subscribe to creation of Todo
-// const newPhotoSubscription = API.graphql(
-//   graphqlOperation(SubscribeToNewPhotos)
-// ).subscribe({
-//   next: (photo) => console.log(todoData)
-// });
-
 class AlbumDetailsLoader extends Component {
   constructor(props) {
     super(props);
@@ -73,65 +66,54 @@ class AlbumDetailsLoader extends Component {
     };
   }
 
-  getAlbum() {
-    return API.graphql(graphqlOperation(GetAlbum, {
-      id: this.props.id,
-      nextTokenForPhotos: this.state.nextTokenForPhotos
-    })).then(resp => {
-      return resp.data.getAlbum
+  async getAlbum() {
+    const resp = await API.graphql(
+      graphqlOperation(GetAlbum, {
+        id: this.props.id,
+        nextTokenForPhotos: this.state.nextTokenForPhotos
+      })
+    );
+    return resp.data.getAlbum;
+  }
+
+  async componentDidMount() {
+    const album = await this.getAlbum();
+    this.setState({ album: album });
+
+    const newPhotoSubscription = API.graphql(
+      graphqlOperation(SubscribeToNewPhotos)
+    ).subscribe({
+      next: newPhotoData => {
+        const newPhoto = newPhotoData.value.data.onCreatePhoto;
+        let album = _.cloneDeep(this.state.album);
+        album.photos.items.push(newPhoto);
+        this.setState({ album: album });
+      }
+    });
+
+    const deletePhotoSubscription = API.graphql(
+      graphqlOperation(SubscribeToDeletePhoto)
+    ).subscribe({
+      next: deletePhotoData => {
+        let album = _.cloneDeep(this.state.album);
+        album.photos.items = album.photos.items.filter(
+          i => i.id !== deletePhotoData.value.data.onDeletePhoto.id
+        );
+        this.setState({ album: album });
+      }
     });
   }
 
-  componentDidMount() {
-    this.getAlbum().then(album => {
-      this.setState({album: album})
-    })
-  }
-
   componentDidUpdate(prevProps) {
-    if(prevProps != this.props) {
+    if (prevProps !== this.props) {
       this.getAlbum().then(album => {
-        this.setState({album: album})
-      })
+        this.setState({ album: album });
+      });
     }
-    
   }
-
-  onNewPhoto = (prevQuery, newData) => {
-    let updatedQuery = Object.assign({}, prevQuery);
-    updatedQuery.getAlbum.photos.items = prevQuery.getAlbum.photos.items.concat(
-      [newData.onCreatePhoto]
-    );
-    return updatedQuery;
-  };
 
   render() {
-      return (
-        // <Connect
-        //   query={graphqlOperation(GetAlbum, {
-        //     id: this.props.id,
-        //     nextTokenForPhotos: this.state.nextTokenForPhotos
-        //   })}
-        //   subscription={graphqlOperation(SubscribeToNewPhotos)}
-        //   onSubscriptionMsg={this.onNewPhoto}
-        // >
-        //   {({ data, loading, errors }) => {
-        //     if (loading) {
-        //       return <div>Loading...</div>;
-        //     }
-        //     if (!data.getAlbum) return;
-
-        //     if (data.getAlbum.photos && data.getAlbum.photos.nextToken) {
-        //       this.setState({
-        //         nextTokenForPhotos: data.getAlbum.photos.nextToken
-        //       });
-        //     }
-        //     return <AlbumDetails album={data.getAlbum} />;
-        //   }}
-        // </Connect>
-        <AlbumDetails album={this.state.album} />
-      );
-    
+    return <AlbumDetails album={this.state.album} />;
   }
 }
 

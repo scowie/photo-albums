@@ -64,6 +64,7 @@ class AlbumDetails extends Component {
     this.state = {
       filesActivelyUploading: {},
       filesToBeUploaded: null,
+      filesToBeDeleted: [],
       uploading: false,
       sidebarVisible: false,
       saveInProgress: false,
@@ -76,124 +77,150 @@ class AlbumDetails extends Component {
   }
 
   cleanFileName(name) {
-    let cleanedName = name.replace(" ", "")
-    cleanedName = cleanedName.replace(".", "")
-    return cleanedName
+    let cleanedName = name.replace(" ", "");
+    cleanedName = cleanedName.replace(".", "");
+    return cleanedName;
+  }
+
+  addFileToBeDeleted(id) {
+
+  }
+
+  removeFileToBeDeleted(id) {
+
   }
 
   onChange = async e => {
-
     const self = this;
     const files = Array.from(e.target.files);
-  
-    let uploadingFiles = {}
+
+    let uploadingFiles = {};
     files.forEach(f => {
-      uploadingFiles[this.cleanFileName(f.name)] = true
-    })
-    let fileUploadPromises = []
-    self.setState({ uploading: true, filesToBeUploaded: files, filesActivelyUploading: uploadingFiles }, async () => {
-      files.forEach(file => {
-        fileUploadPromises.push(new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = event => {
-            var img = new Image();
-            img.onload = function() {
-              var canvas = document.createElement("canvas");
-              var ctx = canvas.getContext("2d");
-              ctx.drawImage(img, 0, 0);
-    
-              var MAX_WIDTH = 300;
-              var MAX_HEIGHT = 1000;
-              var width = img.width;
-              var height = img.height;
-    
-              if (width > height) {
-                if (width > MAX_WIDTH) {
-                  height *= MAX_WIDTH / width;
-                  width = MAX_WIDTH;
-                }
-              } else {
-                if (height > MAX_HEIGHT) {
-                  width *= MAX_HEIGHT / height;
-                  height = MAX_HEIGHT;
-                }
-              }
-              canvas.width = width;
-              canvas.height = height;
-    
-              ctx.drawImage(img, 0, 0, width, height);
-    
-              const makeThumbnailFile = new Promise((resolve, reject) => {
-                ctx.canvas.toBlob(
-                  blob => {
-                    const thumbnailFile = new File([blob], uuid(), {
-                      type: "image/jpeg",
-                      lastModified: Date.now()
-                    });
-                    resolve(thumbnailFile);
-                  },
-                  "image/jpeg",
-                  1
-                );
-              });
-    
-              makeThumbnailFile.then(async thumbnailFile => {
-                return await EXIF.getData(file, async function() {
-                  const deviceMake = EXIF.getTag(this, "Make");
-                  const deviceModel = EXIF.getTag(this, "Model");
-                  const dateTime = EXIF.getTag(this, "DateTime");
-    
-                  const fileName = uuid();
-    
-                  try {
-                    const dynamoResults = await Promise.all([
-                      Storage.put(`resized/${fileName}`, thumbnailFile, {
-                        metadata: {
-                          albumid: self.props.album.id
-                        }
-                      }),
-                      Storage.put(fileName, file, {
-                        metadata: {
-                          albumid: self.props.album.id
-                        }
-                      })
-                    ]);
-    
-                    const graphQlResult = await API.graphql(
-                      graphqlOperation(NewPhoto, {
-                        bucket: "photoalbums76f3acc6a3cb48d9911ad6df8f67351e",
-                        id: fileName,
-                        photoAlbumId: self.props.album.id,
-                        deviceMake: deviceMake,
-                        deviceModel: deviceModel,
-                        dateTime: dateTime,
-                        thumbnailKey: `public/resized/${fileName}`,
-                        fullsizeKey: `public/${fileName}`,
-                        createdAt: new Date().getTime(),
-                        sortPosition: self.props.album.photos.items.length
-                      })
-                    );
-    
-                    const updatedFilesActivelyUploading = Object.assign({}, self.state.filesActivelyUploading)
-                    updatedFilesActivelyUploading[self.cleanFileName(file.name)] = false
-                    self.setState({filesActivelyUploading: updatedFilesActivelyUploading})
-                    resolve()
-                  } catch (err) {
-                    console.log(err);
-                    reject(err)
+      uploadingFiles[this.cleanFileName(f.name)] = true;
+    });
+    let fileUploadPromises = [];
+    self.setState(
+      {
+        uploading: true,
+        filesToBeUploaded: files,
+        filesActivelyUploading: uploadingFiles
+      },
+      async () => {
+        files.forEach(file => {
+          fileUploadPromises.push(
+            new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = event => {
+                var img = new Image();
+                img.onload = function() {
+                  var canvas = document.createElement("canvas");
+                  var ctx = canvas.getContext("2d");
+                  ctx.drawImage(img, 0, 0);
+
+                  var MAX_WIDTH = 300;
+                  var MAX_HEIGHT = 1000;
+                  var width = img.width;
+                  var height = img.height;
+
+                  if (width > height) {
+                    if (width > MAX_WIDTH) {
+                      height *= MAX_WIDTH / width;
+                      width = MAX_WIDTH;
+                    }
+                  } else {
+                    if (height > MAX_HEIGHT) {
+                      width *= MAX_HEIGHT / height;
+                      height = MAX_HEIGHT;
+                    }
                   }
-                });
-              });
-            };
-    
-            img.src = reader.result;
-          };
-    
-          reader.readAsDataURL(file);
-        }))
-      })
-      Promise.all(fileUploadPromises).then(() => self.setState({ uploading: false }));
-    });    
+                  canvas.width = width;
+                  canvas.height = height;
+
+                  ctx.drawImage(img, 0, 0, width, height);
+
+                  const makeThumbnailFile = new Promise((resolve, reject) => {
+                    ctx.canvas.toBlob(
+                      blob => {
+                        const thumbnailFile = new File([blob], uuid(), {
+                          type: "image/jpeg",
+                          lastModified: Date.now()
+                        });
+                        resolve(thumbnailFile);
+                      },
+                      "image/jpeg",
+                      1
+                    );
+                  });
+
+                  makeThumbnailFile.then(async thumbnailFile => {
+                    return await EXIF.getData(file, async function() {
+                      const deviceMake = EXIF.getTag(this, "Make");
+                      const deviceModel = EXIF.getTag(this, "Model");
+                      const dateTime = EXIF.getTag(this, "DateTime");
+
+                      const fileName = uuid();
+
+                      try {
+                        const dynamoResults = await Promise.all([
+                          Storage.put(`resized/${fileName}`, thumbnailFile, {
+                            metadata: {
+                              albumid: self.props.album.id
+                            }
+                          }),
+                          Storage.put(fileName, file, {
+                            metadata: {
+                              albumid: self.props.album.id
+                            }
+                          })
+                        ]);
+
+                        const graphQlResult = await API.graphql(
+                          graphqlOperation(NewPhoto, {
+                            bucket:
+                              "photoalbums76f3acc6a3cb48d9911ad6df8f67351e",
+                            id: fileName,
+                            photoAlbumId: self.props.album.id,
+                            deviceMake: deviceMake,
+                            deviceModel: deviceModel,
+                            dateTime: dateTime,
+                            thumbnailKey: `public/resized/${fileName}`,
+                            fullsizeKey: `public/${fileName}`,
+                            createdAt: new Date().getTime(),
+                            sortPosition: self.props.album.photos.items.length
+                          })
+                        );
+
+                        const updatedFilesActivelyUploading = Object.assign(
+                          {},
+                          self.state.filesActivelyUploading
+                        );
+                        updatedFilesActivelyUploading[
+                          self.cleanFileName(file.name)
+                        ] = false;
+                        self.setState({
+                          filesActivelyUploading: updatedFilesActivelyUploading
+                        });
+                        resolve();
+                      } catch (err) {
+                        console.log(err);
+                        reject(err);
+                      }
+                    });
+                  });
+                };
+
+                img.src = reader.result;
+              };
+
+              reader.readAsDataURL(file);
+            })
+          );
+        });
+        Promise.all(fileUploadPromises).then(() =>
+          self.setState({ uploading: false })
+        );
+      }
+    );
   };
 
   toggleSidebarVisibility = e => {
@@ -376,27 +403,36 @@ class AlbumDetails extends Component {
           className="icon"
           id="album-details-uploading-dropdown"
           open
-          direction='left'
+          direction="left"
         >
           <Dropdown.Menu>
-            {this.state.filesToBeUploaded && this.state.filesToBeUploaded.map(f => {
-              return (
-                <Dropdown.Item key={f.name}>
-              <span>{f.name}</span>
-              <Loader active={this.state.filesActivelyUploading[this.cleanFileName(f.name)]} inline size="tiny" />
-              {!this.state.filesActivelyUploading[this.cleanFileName(f.name)] && <Icon color={"green"} name="check circle outline" /> }
-              </Dropdown.Item>
-              )
-            })}
-            
+            {this.state.filesToBeUploaded &&
+              this.state.filesToBeUploaded.map(f => {
+                return (
+                  <Dropdown.Item key={f.name}>
+                    <span>{f.name}</span>
+                    <Loader
+                      active={
+                        this.state.filesActivelyUploading[
+                          this.cleanFileName(f.name)
+                        ]
+                      }
+                      inline
+                      size="tiny"
+                    />
+                    {!this.state.filesActivelyUploading[
+                      this.cleanFileName(f.name)
+                    ] && <Icon color={"green"} name="check circle outline" />}
+                  </Dropdown.Item>
+                );
+              })}
           </Dropdown.Menu>
-
         </Dropdown>
       );
     } else {
       return (
         <Dropdown
-          text={'Actions'}
+          text={"Actions"}
           icon={"content"}
           floating
           button
@@ -434,10 +470,7 @@ class AlbumDetails extends Component {
               </Button>
             </Dropdown.Item>
             <Dropdown.Item>
-              <Button
-                className="pm-button"
-                onClick={this.deletePhoto}
-              >
+              <Button className="pm-button" onClick={this.deletePhoto}>
                 <Icon name="trash" />
                 Delete
               </Button>
@@ -557,6 +590,8 @@ class AlbumDetails extends Component {
               <PhotosList
                 photos={this.state.albumPhotos ? this.state.albumPhotos : []}
                 onSortEnd={this.onSortEnd.bind(this)}
+                addFileToBeDeleted={this.addFileToBeDeleted.bind(this)}
+                removeFileToBeDeleted={this.removeFileToBeDeleted.bind(this)}
               />
             </Sidebar.Pusher>
           </Sidebar.Pushable>
