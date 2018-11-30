@@ -76,6 +76,13 @@ class AlbumDetails extends Component {
     );
   }
 
+  handleSelectionClick(id, checked) {
+    console.log(id)
+    console.log(checked)
+    debugger
+    console.log('test')
+  }
+
   cleanFileName(name) {
     let cleanedName = name.replace(" ", "");
     cleanedName = cleanedName.replace(".", "");
@@ -83,11 +90,14 @@ class AlbumDetails extends Component {
   }
 
   addFileToBeDeleted(id) {
-
+    let fileIds = this.state.filesToBeDeleted;
+    fileIds.push(id);
+    this.setState({ filesToBeDeleted: fileIds });
   }
 
   removeFileToBeDeleted(id) {
-
+    let fileIds = this.state.filesToBeDeleted.filter(i => i !== id);
+    this.setState({ filesToBeDeleted: fileIds });
   }
 
   onChange = async e => {
@@ -293,22 +303,32 @@ class AlbumDetails extends Component {
     });
   };
 
-  deletePhoto = async () => {
+  deleteSelectedPhotos = async () => {
+    let fileDeletePromises = [];
     const DeletePhoto = `mutation DeletePhoto($id: ID!) {
-        deletePhoto(input: {id: $id}) {
-          id
-        }
-      }`;
+      deletePhoto(input: {id: $id}) {
+        id
+      }
+    }`;
 
     this.setState({ deleteInProgress: true }, async () => {
-      const result = await API.graphql(
-        graphqlOperation(DeletePhoto, {
-          id: this.state.albumPhotos[0].id
-        })
-      );
-      this.setState({ deleteInProgress: false });
+      this.state.filesToBeDeleted.forEach(async fileId => {
+        fileDeletePromises.push(
+          new Promise(async (resolve, reject) => {
+            await API.graphql(
+              graphqlOperation(DeletePhoto, {
+                id: fileId
+              })
+            );
+            this.setState({filesToBeDeleted: this.state.filesToBeDeleted.filter(i => i !== fileId)})
+            resolve();
+          })
+        );
+      });
 
-      return result;
+      Promise.all(fileDeletePromises).then(() =>
+        this.setState({ deleteInProgress: false, filesToBeDeleted: [] })
+      );
     });
   };
 
@@ -470,9 +490,17 @@ class AlbumDetails extends Component {
               </Button>
             </Dropdown.Item>
             <Dropdown.Item>
-              <Button className="pm-button" onClick={this.deletePhoto}>
+              <Button
+                className="pm-button"
+                onClick={this.deleteSelectedPhotos}
+                disabled={!this.state.filesToBeDeleted.length}
+              >
                 <Icon name="trash" />
-                Delete
+                Delete{" "}
+                {this.state.filesToBeDeleted.length > 0
+                  ? this.state.filesToBeDeleted.length
+                  : ""}{" "}
+                Photos
               </Button>
             </Dropdown.Item>
           </Dropdown.Menu>
@@ -490,6 +518,15 @@ class AlbumDetails extends Component {
             <h2>{this.state.albumName ? this.state.albumName : ""}</h2>
           </div>
           <div className="title-bar-actions-container">
+          {   this.state.deleteInProgress &&             
+          <span>
+            Deleting{" "}{this.state.filesToBeDeleted.length}{" "}Photos&nbsp;&nbsp;&nbsp;
+            <Loader
+                  active={this.state.deleteInProgress}
+                  inline
+                  size="tiny"
+                />
+          </span>}
             <NavLink to="/albums">
               <Button
                 size="medium"
@@ -590,8 +627,7 @@ class AlbumDetails extends Component {
               <PhotosList
                 photos={this.state.albumPhotos ? this.state.albumPhotos : []}
                 onSortEnd={this.onSortEnd.bind(this)}
-                addFileToBeDeleted={this.addFileToBeDeleted.bind(this)}
-                removeFileToBeDeleted={this.removeFileToBeDeleted.bind(this)}
+                handleSelectionClick={this.handleSelectionClick.bind(this)}
               />
             </Sidebar.Pusher>
           </Sidebar.Pushable>

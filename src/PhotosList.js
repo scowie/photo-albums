@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { NavLink } from "react-router-dom";
-import { Card, Icon, Image } from "semantic-ui-react";
+import { Card, Icon, Image, Checkbox } from "semantic-ui-react";
 import { S3Image } from "aws-amplify-react";
 import {
   SortableContainer,
@@ -8,6 +8,7 @@ import {
   SortableHandle
 } from "react-sortable-hoc";
 import { API, graphqlOperation } from "aws-amplify";
+// import SortableItem from "./SortableItem";
 
 function makeComparator(key, order = "asc") {
   return (a, b) => {
@@ -30,8 +31,9 @@ const DragHandle = SortableHandle(() => (
   </div>
 ));
 
-const SortableItem = SortableElement(({ photo, sortIndex }) => (
+const SortableItem = SortableElement(({ photo, sortIndex, handleSelectionClick }) => (
   <Card className="pm-thumbnail-photo-card" key={photo.thumbnailKey}>
+  <Checkbox className="pm-photo-selection-checkbox" onClick={() => handleSelectionClick(photo.id)} />
     <DragHandle />
     <div className="pm-photo-sort-position">
       <span>{sortIndex + 1}</span>
@@ -53,18 +55,21 @@ const SortableItem = SortableElement(({ photo, sortIndex }) => (
   </Card>
 ));
 
-const SortableList = SortableContainer(({ photos }) => (
-  <Card.Group>
-    {photos.map((photo, index) => (
-      <SortableItem
-        key={`photo-${photo.thumbnailKey}`}
-        index={index}
-        sortIndex={index}
-        photo={photo}
-      />
-    ))}
-  </Card.Group>
-));
+const SortableList = SortableContainer(
+  ({ photos, handleSelectionClick }) => (
+    <Card.Group>
+      {photos.map((photo, index) => (
+        <SortableItem
+          key={`photo-${photo.thumbnailKey}`}
+          index={index}
+          sortIndex={index}
+          photo={photo}
+          handleSelectionClick={handleSelectionClick}
+        />)
+      )}
+    </Card.Group>
+  )
+);
 
 class PhotosList extends Component {
   state = {
@@ -72,6 +77,8 @@ class PhotosList extends Component {
     saveInProgress: false,
     hasUnsavedChanges: false
   };
+
+  
 
   savePhotoChanges = async photo => {
     const UpdatePhoto = `mutation UpdatePhoto($id: ID!, $sortPosition: Int, $title: String, $description: String, $isVisible: Boolean) {
@@ -106,6 +113,7 @@ class PhotosList extends Component {
           photos={this.props.photos.sort(makeComparator("sortPosition"))}
           axis={"xy"}
           onSortEnd={this.props.onSortEnd}
+          handleSelectionClick={this.props.handleSelectionClick}
           useDragHandle={true}
         />
       </div>
