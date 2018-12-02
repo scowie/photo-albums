@@ -7,7 +7,7 @@ const GetAlbum = `query GetAlbum($id: ID!, $nextTokenForPhotos: String) {
     getAlbum(id: $id) {
       id
       name
-      members
+      isVisible
       photos(sortDirection: DESC, limit:100, nextToken: $nextTokenForPhotos) {
         nextToken
         items {

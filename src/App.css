@@ -129,6 +129,8 @@ button.ui.primary.button.pm-button {
   padding:0px;
   left:0px;
   z-index:2;
+  border-top-left-radius:5px;
+  border-top-right-radius:5px;
   background: rgba(255, 255, 255, .8);
 }
 
@@ -214,6 +216,7 @@ button.ui.primary.button.pm-button {
   outline:none;
   box-shadow: none;
   padding:10px;
+  min-height:300px;
 }
 
 #pm-album-photos-list .pusher {
@@ -244,7 +247,7 @@ button.ui.primary.button.pm-button {
 }
 
 #album-details-actions-dropdown > div.text {
-  margin-right:15px;
+  margin-right:0px;
 }
 
 #album-details-uploading-dropdown span {
@@ -256,4 +259,8 @@ div.checkbox.pm-photo-selection-checkbox {
   z-index:9;
   left:10px;
   top:10px;
+}
+
+.pusher > div {
+  margin-left:1px;
 }

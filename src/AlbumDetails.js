@@ -78,17 +78,17 @@ class AlbumDetails extends Component {
   }
 
   async handleSelectionClick(id) {
-    let statuses = Object.assign({}, this.state.checkedStatuses)
-    if(statuses[id] === true) {
-      statuses[id] = false
-      this.setState({checkedStatuses: statuses}, async () => {
-       return await this.removeFileToBeDeleted(id)
-      })
+    let statuses = Object.assign({}, this.state.checkedStatuses);
+    if (statuses[id] === true) {
+      statuses[id] = false;
+      this.setState({ checkedStatuses: statuses }, async () => {
+        return await this.removeFileToBeDeleted(id);
+      });
     } else {
-      statuses[id] = true
-      this.setState({checkedStatuses: statuses}, async () => {
-        return await this.addFileToBeDeleted(id)
-      })
+      statuses[id] = true;
+      this.setState({ checkedStatuses: statuses }, async () => {
+        return await this.addFileToBeDeleted(id);
+      });
     }
   }
 
@@ -99,7 +99,7 @@ class AlbumDetails extends Component {
   }
 
   async addFileToBeDeleted(id) {
-    let fileIds = [...this.state.filesToBeDeleted]
+    let fileIds = [...this.state.filesToBeDeleted];
     fileIds.push(id);
     return await this.setState({ filesToBeDeleted: fileIds });
   }
@@ -329,7 +329,11 @@ class AlbumDetails extends Component {
                 id: fileId
               })
             );
-            this.setState({filesToBeDeleted: this.state.filesToBeDeleted.filter(i => i !== fileId)})
+            this.setState({
+              filesToBeDeleted: this.state.filesToBeDeleted.filter(
+                i => i !== fileId
+              )
+            });
             resolve();
           })
         );
@@ -374,7 +378,7 @@ class AlbumDetails extends Component {
   };
 
   toggleAlbumVisibility = e => {
-    this.setState({ albumIsVisible: this.state.albumIsVisible ? false : true });
+    this.setState({ albumIsVisible: this.state.albumIsVisible === true ? false : true });
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -461,12 +465,12 @@ class AlbumDetails extends Component {
     } else {
       return (
         <Dropdown
-          text={"Actions"}
-          icon={"content"}
+          icon={"ellipsis horizontal"}
           floating
           button
           className="icon"
           id="album-details-actions-dropdown"
+          direction="left"
         >
           <Dropdown.Menu>
             <Dropdown.Item>
@@ -489,7 +493,7 @@ class AlbumDetails extends Component {
                 />
               </div>
             </Dropdown.Item>
-            <Dropdown.Item>
+            {/* <Dropdown.Item>
               <Button
                 className="pm-button"
                 onClick={this.toggleSidebarVisibility}
@@ -497,8 +501,8 @@ class AlbumDetails extends Component {
                 <Icon name="pencil" />
                 Edit
               </Button>
-            </Dropdown.Item>
-            <Dropdown.Item>
+            </Dropdown.Item> */}
+            {/* <Dropdown.Item>
               <Button
                 className="pm-button"
                 onClick={this.deleteSelectedPhotos}
@@ -511,7 +515,7 @@ class AlbumDetails extends Component {
                   : ""}{" "}
                 Photos
               </Button>
-            </Dropdown.Item>
+            </Dropdown.Item> */}
           </Dropdown.Menu>
         </Dropdown>
       );
@@ -527,15 +531,17 @@ class AlbumDetails extends Component {
             <h2>{this.state.albumName ? this.state.albumName : ""}</h2>
           </div>
           <div className="title-bar-actions-container">
-          {   this.state.deleteInProgress &&             
-          <span>
-            Deleting{" "}{this.state.filesToBeDeleted.length}{" "}Photos&nbsp;&nbsp;&nbsp;
-            <Loader
+            {this.state.deleteInProgress && (
+              <span>
+                Deleting {this.state.filesToBeDeleted.length}{" "}
+                Photos&nbsp;&nbsp;&nbsp;
+                <Loader
                   active={this.state.deleteInProgress}
                   inline
                   size="tiny"
                 />
-          </span>}
+              </span>
+            )}
             <NavLink to="/albums">
               <Button
                 size="medium"
@@ -546,8 +552,32 @@ class AlbumDetails extends Component {
                 Albums
               </Button>
             </NavLink>
-            {this.getDropdown()}
+
             <Button
+              size="medium"
+              className={"pm-button"}
+              onClick={this.toggleSidebarVisibility}
+            >
+              <Icon name="pencil" />
+              Edit
+            </Button>
+
+            <Button
+              className="pm-button"
+              onClick={this.deleteSelectedPhotos}
+              disabled={!this.state.filesToBeDeleted.length}
+            >
+              <Icon name="trash" />
+              Delete{" "}
+              {this.state.filesToBeDeleted.length > 0
+                ? this.state.filesToBeDeleted.length
+                : ""}{" "}
+              Photos
+            </Button>
+
+            {this.getDropdown()}
+
+            {/* <Button
               loading={this.state.saveInProgress}
               disabled={
                 this.state.saveInProgress || !this.state.hasUnsavedChanges
@@ -558,7 +588,7 @@ class AlbumDetails extends Component {
               onClick={this.handleSaveAlbumPhotoSortPositionsClick}
             >
               Save
-            </Button>
+            </Button> */}
           </div>
         </div>
         <Divider />
@@ -600,7 +630,7 @@ class AlbumDetails extends Component {
                   className="pm-button"
                   toggle
                   active={
-                    this.state.albumIsVisible
+                    this.state.albumIsVisible === true
                       ? this.state.albumIsVisible
                       : false
                   }
@@ -617,11 +647,9 @@ class AlbumDetails extends Component {
                 }}
               >
                 <Button
-                  primary={this.state.hasUnsavedChanges}
+                  primary
                   loading={this.state.saveInProgress}
-                  disabled={
-                    this.state.saveInProgress || !this.state.hasUnsavedChanges
-                  }
+                  disabled={this.state.saveInProgress}
                   onClick={this.saveAlbumChanges}
                   size="medium"
                   style={{ marginLeft: "10px" }}
