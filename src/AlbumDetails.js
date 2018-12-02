@@ -63,6 +63,7 @@ class AlbumDetails extends Component {
 
     this.state = {
       filesActivelyUploading: {},
+      checkedStatuses: {},
       filesToBeUploaded: null,
       filesToBeDeleted: [],
       uploading: false,
@@ -76,11 +77,19 @@ class AlbumDetails extends Component {
     );
   }
 
-  handleSelectionClick(id, checked) {
-    console.log(id)
-    console.log(checked)
-    debugger
-    console.log('test')
+  async handleSelectionClick(id) {
+    let statuses = Object.assign({}, this.state.checkedStatuses)
+    if(statuses[id] === true) {
+      statuses[id] = false
+      this.setState({checkedStatuses: statuses}, async () => {
+       return await this.removeFileToBeDeleted(id)
+      })
+    } else {
+      statuses[id] = true
+      this.setState({checkedStatuses: statuses}, async () => {
+        return await this.addFileToBeDeleted(id)
+      })
+    }
   }
 
   cleanFileName(name) {
@@ -89,15 +98,15 @@ class AlbumDetails extends Component {
     return cleanedName;
   }
 
-  addFileToBeDeleted(id) {
-    let fileIds = this.state.filesToBeDeleted;
+  async addFileToBeDeleted(id) {
+    let fileIds = [...this.state.filesToBeDeleted]
     fileIds.push(id);
-    this.setState({ filesToBeDeleted: fileIds });
+    return await this.setState({ filesToBeDeleted: fileIds });
   }
 
-  removeFileToBeDeleted(id) {
-    let fileIds = this.state.filesToBeDeleted.filter(i => i !== id);
-    this.setState({ filesToBeDeleted: fileIds });
+  async removeFileToBeDeleted(id) {
+    let fileIds = [...this.state.filesToBeDeleted.filter(i => i !== id)];
+    return await this.setState({ filesToBeDeleted: fileIds });
   }
 
   onChange = async e => {
