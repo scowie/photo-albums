@@ -129,8 +129,8 @@ button.ui.primary.button.pm-button {
   padding:0px;
   left:0px;
   z-index:2;
-  border-top-left-radius:5px;
-  border-top-right-radius:5px;
+  border-top-left-radius:4px;
+  border-top-right-radius:4px;
   background: rgba(255, 255, 255, .8);
 }
 

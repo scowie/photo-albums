@@ -266,7 +266,7 @@ class AlbumDetails extends Component {
           isVisible: this.state.albumIsVisible
         })
       );
-      this.setState({ saveInProgress: false });
+      this.setState({ saveInProgress: false, sidebarVisible: !this.state.sidebarVisible});
       return result;
     });
   };
@@ -493,29 +493,6 @@ class AlbumDetails extends Component {
                 />
               </div>
             </Dropdown.Item>
-            {/* <Dropdown.Item>
-              <Button
-                className="pm-button"
-                onClick={this.toggleSidebarVisibility}
-              >
-                <Icon name="pencil" />
-                Edit
-              </Button>
-            </Dropdown.Item> */}
-            {/* <Dropdown.Item>
-              <Button
-                className="pm-button"
-                onClick={this.deleteSelectedPhotos}
-                disabled={!this.state.filesToBeDeleted.length}
-              >
-                <Icon name="trash" />
-                Delete{" "}
-                {this.state.filesToBeDeleted.length > 0
-                  ? this.state.filesToBeDeleted.length
-                  : ""}{" "}
-                Photos
-              </Button>
-            </Dropdown.Item> */}
           </Dropdown.Menu>
         </Dropdown>
       );
@@ -577,18 +554,6 @@ class AlbumDetails extends Component {
 
             {this.getDropdown()}
 
-            {/* <Button
-              loading={this.state.saveInProgress}
-              disabled={
-                this.state.saveInProgress || !this.state.hasUnsavedChanges
-              }
-              size="medium"
-              className={"pm-button"}
-              primary={this.state.hasUnsavedChanges}
-              onClick={this.handleSaveAlbumPhotoSortPositionsClick}
-            >
-              Save
-            </Button> */}
           </div>
         </div>
         <Divider />
