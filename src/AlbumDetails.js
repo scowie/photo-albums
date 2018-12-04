@@ -20,6 +20,7 @@ import EXIF from "exif-js";
 const NewPhoto = `mutation NewPhoto(
   $bucket: String!, 
   $id: ID, 
+  $title: String,
   $photoAlbumId: ID, 
   $deviceMake: String,
   $deviceModel: String,
@@ -32,6 +33,7 @@ const NewPhoto = `mutation NewPhoto(
 createPhoto(input: {
     bucket: $bucket, 
     id: $id, 
+    title: $title,
     photoAlbumId: $photoAlbumId, 
     deviceMake: $deviceMake, 
     deviceModel: $deviceModel, 
@@ -125,7 +127,7 @@ class AlbumDetails extends Component {
         filesActivelyUploading: uploadingFiles
       },
       async () => {
-        files.forEach(file => {
+        files.forEach((file, index) => {
           fileUploadPromises.push(
             new Promise((resolve, reject) => {
               const reader = new FileReader();
@@ -176,8 +178,7 @@ class AlbumDetails extends Component {
                       const deviceMake = EXIF.getTag(this, "Make");
                       const deviceModel = EXIF.getTag(this, "Model");
                       const dateTime = EXIF.getTag(this, "DateTime");
-                      const title = EXIF.getTag(this, "name");
-
+                      const title = file.name;
                       const fileId = uuid();
 
                       try {
