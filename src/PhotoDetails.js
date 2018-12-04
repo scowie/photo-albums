@@ -44,7 +44,7 @@ class PhotoDetails extends Component {
           isVisible: this.state.photo.isVisible
         })
       );
-      this.setState({ saveInProgress: false });
+      this.setState({ saveInProgress: false, sidebarVisible: !this.state.sidebarVisible });
       return result;
     });
   };
