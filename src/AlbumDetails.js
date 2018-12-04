@@ -176,17 +176,18 @@ class AlbumDetails extends Component {
                       const deviceMake = EXIF.getTag(this, "Make");
                       const deviceModel = EXIF.getTag(this, "Model");
                       const dateTime = EXIF.getTag(this, "DateTime");
+                      const title = EXIF.getTag(this, "name");
 
-                      const fileName = uuid();
+                      const fileId = uuid();
 
                       try {
                         const dynamoResults = await Promise.all([
-                          Storage.put(`resized/${fileName}`, thumbnailFile, {
+                          Storage.put(`resized/${fileId}`, thumbnailFile, {
                             metadata: {
                               albumid: self.props.album.id
                             }
                           }),
-                          Storage.put(fileName, file, {
+                          Storage.put(fileId, file, {
                             metadata: {
                               albumid: self.props.album.id
                             }
@@ -197,13 +198,14 @@ class AlbumDetails extends Component {
                           graphqlOperation(NewPhoto, {
                             bucket:
                               "photoalbums76f3acc6a3cb48d9911ad6df8f67351e",
-                            id: fileName,
+                            id: fileId,
                             photoAlbumId: self.props.album.id,
+                            title: title,
                             deviceMake: deviceMake,
                             deviceModel: deviceModel,
                             dateTime: dateTime,
-                            thumbnailKey: `public/resized/${fileName}`,
-                            fullsizeKey: `public/${fileName}`,
+                            thumbnailKey: `public/resized/${fileId}`,
+                            fullsizeKey: `public/${fileId}`,
                             createdAt: new Date().getTime(),
                             sortPosition: self.props.album.photos.items.length
                           })
