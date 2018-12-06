@@ -8,7 +8,8 @@ import {
   Dropdown,
   Sidebar,
   Segment,
-  Loader
+  Loader,
+  Modal
 } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
@@ -74,7 +75,9 @@ class AlbumDetails extends Component {
       sidebarVisible: false,
       saveInProgress: false,
       deleteInProgress: false,
-      hasUnsavedChanges: false
+      hasUnsavedChanges: false,
+      deleteAlbumInProgress: false,
+      openDeleteAlbumModal: false
     };
     this.autoSaveAlbumPhotoSortPositions = this.autoSaveAlbumPhotoSortPositions.bind(
       this
@@ -185,7 +188,7 @@ class AlbumDetails extends Component {
                       const fileId = uuid();
 
                       try {
-                        const dynamoResults = await Promise.all([
+                        await Promise.all([
                           Storage.put(`resized/${fileId}`, thumbnailFile, {
                             metadata: {
                               albumid: self.props.album.id
@@ -198,7 +201,7 @@ class AlbumDetails extends Component {
                           })
                         ]);
 
-                        const graphQlResult = await API.graphql(
+                        await API.graphql(
                           graphqlOperation(NewPhoto, {
                             bucket:
                               "photoalbums76f3acc6a3cb48d9911ad6df8f67351e",
@@ -273,7 +276,10 @@ class AlbumDetails extends Component {
           isVisible: this.state.albumIsVisible
         })
       );
-      this.setState({ saveInProgress: false, sidebarVisible: !this.state.sidebarVisible});
+      this.setState({
+        saveInProgress: false,
+        sidebarVisible: !this.state.sidebarVisible
+      });
       return result;
     });
   };
@@ -318,6 +324,17 @@ class AlbumDetails extends Component {
       return result;
     });
   };
+
+  closeDeleteAlbumModal = () => {
+    this.setState({openDeleteAlbumModal: false})
+  }
+
+  handleDeleteAlbumRequest = () => {
+    this.setState({openDeleteAlbumModal: true})
+    console.log('called')
+  };
+
+  deleteAlbum = async () => {};
 
   deleteSelectedPhotos = async () => {
     let fileDeletePromises = [];
@@ -385,7 +402,9 @@ class AlbumDetails extends Component {
   };
 
   toggleAlbumVisibility = e => {
-    this.setState({ albumIsVisible: this.state.albumIsVisible === true ? false : true });
+    this.setState({
+      albumIsVisible: this.state.albumIsVisible === true ? false : true
+    });
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -500,6 +519,14 @@ class AlbumDetails extends Component {
                 />
               </div>
             </Dropdown.Item>
+            <Dropdown.Item>
+              <Form.Button
+                onClick={this.handleDeleteAlbumRequest}
+                disabled={this.state.deleteAlbumInProgress}
+                icon="trash"
+                content={"Delete Album"}
+              />
+            </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       );
@@ -560,7 +587,6 @@ class AlbumDetails extends Component {
             </Button>
 
             {this.getDropdown()}
-
           </div>
         </div>
         <Divider />
@@ -641,6 +667,16 @@ class AlbumDetails extends Component {
             </Sidebar.Pusher>
           </Sidebar.Pushable>
         </div>
+        <Modal size={"tiny"} open={this.state.openDeleteAlbumModal} onClose={this.closeDeleteAlbumModal}>
+          <Modal.Header>Delete Your Account</Modal.Header>
+          <Modal.Content>
+            <p>Are you sure you want to delete this album?</p>
+          </Modal.Content>
+          <Modal.Actions>
+            <Button negative onClick={this.closeDeleteAlbumModal}>No</Button>
+            <Button positive icon='checkmark' labelPosition='right' content='Yes' />
+          </Modal.Actions>
+        </Modal>
       </div>
     );
   }
