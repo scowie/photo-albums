@@ -114,6 +114,7 @@ class AlbumDetails extends Component {
   onChange = async e => {
     const self = this;
     const files = Array.from(e.target.files);
+    const numPhotosBeforeUploads = self.props.album.photos.items.length;
 
     let uploadingFiles = {};
     files.forEach(f => {
@@ -208,7 +209,7 @@ class AlbumDetails extends Component {
                             thumbnailKey: `public/resized/${fileId}`,
                             fullsizeKey: `public/${fileId}`,
                             createdAt: new Date().getTime(),
-                            sortPosition: self.props.album.photos.items.length
+                            sortPosition: numPhotosBeforeUploads + index
                           })
                         );
 
