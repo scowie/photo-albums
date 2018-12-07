@@ -80,7 +80,7 @@ class AlbumDetailsLoader extends Component {
     const album = await this.getAlbum();
     this.setState({ album: album });
 
-    const newPhotoSubscription = API.graphql(
+    this.newPhotoSubscription = API.graphql(
       graphqlOperation(SubscribeToNewPhotos)
     ).subscribe({
       next: newPhotoData => {
@@ -91,7 +91,7 @@ class AlbumDetailsLoader extends Component {
       }
     });
 
-    const deletePhotoSubscription = API.graphql(
+    this.deletePhotoSubscription = API.graphql(
       graphqlOperation(SubscribeToDeletePhoto)
     ).subscribe({
       next: deletePhotoData => {
@@ -110,6 +110,11 @@ class AlbumDetailsLoader extends Component {
         this.setState({ album: album });
       });
     }
+  }
+
+  componentWillUnmount() {
+    this.newPhotoSubscription.unsubscribe()
+    this.deletePhotoSubscription.unsubscribe()
   }
 
   render() {

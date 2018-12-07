@@ -11,7 +11,7 @@ import {
   Loader,
   Modal
 } from "semantic-ui-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Redirect } from "react-router-dom";
 import { API, graphqlOperation } from "aws-amplify";
 import { arrayMove } from "react-sortable-hoc";
 import { Storage } from "aws-amplify";
@@ -77,7 +77,8 @@ class AlbumDetails extends Component {
       deleteInProgress: false,
       hasUnsavedChanges: false,
       deleteAlbumInProgress: false,
-      openDeleteAlbumModal: false
+      openDeleteAlbumModal: false,
+      navigateToAlbumsList: false
     };
     this.autoSaveAlbumPhotoSortPositions = this.autoSaveAlbumPhotoSortPositions.bind(
       this
@@ -326,46 +327,73 @@ class AlbumDetails extends Component {
   };
 
   closeDeleteAlbumModal = () => {
-    this.setState({openDeleteAlbumModal: false})
-  }
-
-  handleDeleteAlbumRequest = () => {
-    this.setState({openDeleteAlbumModal: true})
-    console.log('called')
+    this.setState({ openDeleteAlbumModal: false });
   };
 
-  deleteAlbum = async () => {};
+  handleDeleteAlbumRequest = () => {
+    this.setState({ openDeleteAlbumModal: true });
+  };
+
+  deleteAlbum = async () => {
+    const DeleteAlbum = `mutation DeleteAlbum($id: ID!) {
+      deleteAlbum(input: {id: $id}) {
+        id
+      }
+    }`;
+
+    await this.setState(
+      {
+        filesToBeDeleted: this.props.album.photos.items.map(i => i.id),
+        deleteAlbumInProgress: true
+      },
+      async () => {
+        await this.deleteSelectedPhotos();
+        setTimeout(async () => {
+          debugger
+          await API.graphql(
+            graphqlOperation(DeleteAlbum, {
+              id: this.props.album.id
+            })
+          );
+          this.setState({ navigateToAlbumsList: true });
+        },2000)
+
+      }
+    );
+  };
 
   deleteSelectedPhotos = async () => {
-    let fileDeletePromises = [];
     const DeletePhoto = `mutation DeletePhoto($id: ID!) {
       deletePhoto(input: {id: $id}) {
         id
       }
     }`;
 
-    this.setState({ deleteInProgress: true }, async () => {
-      this.state.filesToBeDeleted.forEach(async fileId => {
-        fileDeletePromises.push(
-          new Promise(async (resolve, reject) => {
+    return await this.setState({ deleteInProgress: true }, async () => {
+      Promise.all(
+        this.state.filesToBeDeleted.map(async fileId => {
+          try {
             await API.graphql(
               graphqlOperation(DeletePhoto, {
                 id: fileId
               })
             );
-            this.setState({
-              filesToBeDeleted: this.state.filesToBeDeleted.filter(
-                i => i !== fileId
-              )
-            });
-            resolve();
-          })
-        );
-      });
+          } catch (error) {
+            console.log(error);
+          }
 
-      Promise.all(fileDeletePromises).then(() =>
-        this.setState({ deleteInProgress: false, filesToBeDeleted: [] })
+          await this.setState({
+            filesToBeDeleted: this.state.filesToBeDeleted.filter(
+              i => i !== fileId
+            )
+          });
+        })
       );
+
+      await this.setState({
+        deleteInProgress: false,
+        filesToBeDeleted: []
+      });
     });
   };
 
@@ -535,6 +563,8 @@ class AlbumDetails extends Component {
 
   render() {
     if (!this.props.album) return "Loading album...";
+    if (this.state.navigateToAlbumsList)
+      return <Redirect to="/albums" push={true} />;
     return (
       <div>
         <div className="title-bar-container">
@@ -667,14 +697,32 @@ class AlbumDetails extends Component {
             </Sidebar.Pusher>
           </Sidebar.Pushable>
         </div>
-        <Modal size={"tiny"} open={this.state.openDeleteAlbumModal} onClose={this.closeDeleteAlbumModal}>
+        <Modal
+          size={"tiny"}
+          open={this.state.openDeleteAlbumModal}
+          onClose={this.closeDeleteAlbumModal}
+        >
           <Modal.Header>Delete Your Account</Modal.Header>
           <Modal.Content>
             <p>Are you sure you want to delete this album?</p>
           </Modal.Content>
           <Modal.Actions>
-            <Button negative onClick={this.closeDeleteAlbumModal}>No</Button>
-            <Button positive icon='checkmark' labelPosition='right' content='Yes' />
+            <Button
+              className="pm-buttton--negative"
+              negative
+              onClick={this.closeDeleteAlbumModal}
+            >
+              No
+            </Button>
+            <Button
+              className="pm-button--positive"
+              positive
+              icon="checkmark"
+              labelPosition="right"
+              content="Yes"
+              onClick={this.deleteAlbum}
+              loading={this.state.deleteAlbumInProgress}
+            />
           </Modal.Actions>
         </Modal>
       </div>
