@@ -341,23 +341,20 @@ class AlbumDetails extends Component {
       }
     }`;
 
-    await this.setState(
+    this.setState(
       {
         filesToBeDeleted: this.props.album.photos.items.map(i => i.id),
         deleteAlbumInProgress: true
       },
       async () => {
-        await this.deleteSelectedPhotos();
-        setTimeout(async () => {
-          debugger
+        this.deleteSelectedPhotos().then(async () => {
           await API.graphql(
             graphqlOperation(DeleteAlbum, {
               id: this.props.album.id
             })
           );
           this.setState({ navigateToAlbumsList: true });
-        },2000)
-
+        });
       }
     );
   };
@@ -369,30 +366,35 @@ class AlbumDetails extends Component {
       }
     }`;
 
-    return await this.setState({ deleteInProgress: true }, async () => {
-      Promise.all(
-        this.state.filesToBeDeleted.map(async fileId => {
-          try {
-            await API.graphql(
-              graphqlOperation(DeletePhoto, {
-                id: fileId
-              })
-            );
-          } catch (error) {
-            console.log(error);
-          }
+    return new Promise((resolve, reject) => {
+      this.setState({ deleteInProgress: true }, async () => {
+        Promise.all(
+          this.state.filesToBeDeleted.map(async fileId => {
+            try {
+              await API.graphql(
+                graphqlOperation(DeletePhoto, {
+                  id: fileId
+                })
+              );
+            } catch (error) {
+              console.log(error);
+            }
 
-          await this.setState({
-            filesToBeDeleted: this.state.filesToBeDeleted.filter(
-              i => i !== fileId
-            )
-          });
-        })
-      );
-
-      await this.setState({
-        deleteInProgress: false,
-        filesToBeDeleted: []
+            await this.setState({
+              filesToBeDeleted: this.state.filesToBeDeleted.filter(
+                i => i !== fileId
+              )
+            });
+          })
+        ).then(resp => {
+          this.setState(
+            {
+              deleteInProgress: false,
+              filesToBeDeleted: []
+            },
+            resolve()
+          );
+        });
       });
     });
   };
@@ -473,9 +475,9 @@ class AlbumDetails extends Component {
   }
 
   componentWillUnmount() {
-    if (this.state.hasUnsavedChanges) {
-      return this.autoSaveAlbumPhotoSortPositions(this.state.albumPhotos);
-    }
+    // if (this.state.hasUnsavedChanges) {
+    //   return this.autoSaveAlbumPhotoSortPositions(this.state.albumPhotos);
+    // }
   }
 
   getDropdown() {
@@ -615,6 +617,12 @@ class AlbumDetails extends Component {
                 : ""}{" "}
               Photos
             </Button>
+
+              <Button
+              className="pm-button"
+              onClick={() => this.autoSaveAlbumPhotoSortPositions(this.state.albumPhotos)}
+              disabled={!this.props.album.photos.items.length > 0}
+            >Save</Button>
 
             {this.getDropdown()}
           </div>
