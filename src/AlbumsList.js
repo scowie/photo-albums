@@ -75,11 +75,12 @@ class AlbumsList extends Component {
 
   handleNewGallerySubmit = async event => {
     event.preventDefault();
-    const NewAlbum = `mutation NewAlbum($name: String!, $sortPosition: Int) {
-        createAlbum(input: {name: $name, sortPosition: $sortPosition}) {
+    const NewAlbum = `mutation NewAlbum($name: String!, $sortPosition: Int, $isVisible: Boolean) {
+        createAlbum(input: {name: $name, sortPosition: $sortPosition, isVisible: $isVisible}) {
           id
           name
           sortPosition
+          isVisible
         }
       }`;
 
@@ -87,7 +88,8 @@ class AlbumsList extends Component {
       const result = await API.graphql(
         graphqlOperation(NewAlbum, {
           name: this.state.newAlbumName,
-          sortPosition: this.props.albums.length
+          sortPosition: this.props.albums.length,
+          isVisible: true
         })
       );
 
@@ -102,7 +104,7 @@ class AlbumsList extends Component {
           await this.saveAlbumChanges(album.id, index);
         })
       );
-      this.setState({ saveInProgress: false });
+      this.setState({ saveInProgress: false, hasUnsavedChanges: false });
     });
   };
 
