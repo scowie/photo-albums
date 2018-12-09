@@ -266,6 +266,10 @@ div.checkbox.pm-photo-selection-checkbox {
   margin-left:1px;
 }
 
-.pm-button--positive {
+.ui.negative.button.pm-buttton--negative {
+  background: var(--color-ctx-7);
+}
 
+.ui.positive.button.pm-buttton--positive {
+  background: var(--color-ctx-6);
 }

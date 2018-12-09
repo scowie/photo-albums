@@ -618,11 +618,15 @@ class AlbumDetails extends Component {
               Photos
             </Button>
 
-              <Button
+            <Button
               className="pm-button"
-              onClick={() => this.autoSaveAlbumPhotoSortPositions(this.state.albumPhotos)}
+              onClick={() =>
+                this.autoSaveAlbumPhotoSortPositions(this.state.albumPhotos)
+              }
               disabled={!this.props.album.photos.items.length > 0}
-            >Save</Button>
+            >
+              Save
+            </Button>
 
             {this.getDropdown()}
           </div>
@@ -710,7 +714,7 @@ class AlbumDetails extends Component {
           open={this.state.openDeleteAlbumModal}
           onClose={this.closeDeleteAlbumModal}
         >
-          <Modal.Header>Delete Your Account</Modal.Header>
+          <Modal.Header>Delete Album {this.props.album.name}</Modal.Header>
           <Modal.Content>
             <p>Are you sure you want to delete this album?</p>
           </Modal.Content>
@@ -725,12 +729,12 @@ class AlbumDetails extends Component {
             <Button
               className="pm-button--positive"
               positive
-              icon="checkmark"
-              labelPosition="right"
-              content="Yes"
               onClick={this.deleteAlbum}
               loading={this.state.deleteAlbumInProgress}
-            />
+              disabled={this.state.deleteAlbumInProgress}
+            >
+              Yes
+            </Button>
           </Modal.Actions>
         </Modal>
       </div>
