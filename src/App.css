@@ -116,6 +116,9 @@ button.ui.primary.button.pm-button {
 
 .album-segment__main-content {
   margin-left:25px;
+  display:flex;
+  justify-content:space-between;
+  width:100%;
 }
 
 .photo-drag-handle {
@@ -272,4 +275,36 @@ div.checkbox.pm-photo-selection-checkbox {
 
 .ui.positive.button.pm-buttton--positive {
   background: var(--color-ctx-6);
+}
+
+.pm-album-segment__right {
+  position:absolute;
+  top:4px;
+  right:4px;
+  z-index:3;
+  height:35px;
+  width:250px;
+  border-radius:2px;
+  display:flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.pm-album-segment__right span {
+  color:var(--default-text-color);
+  font-size:1.3rem;
+}
+
+.pm-icon-text-group {
+  position:relative;
+}
+
+.pm-icon-text-group > div {
+  position:absolute;
+  top:2px;
+  border:1px solid green;
+}
+
+.pm-label {
+  font-weight:500;
 }

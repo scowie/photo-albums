@@ -10,6 +10,14 @@ const ListAlbums = `query ListAlbums {
             name
             sortPosition
             isVisible
+            photos {
+              items {
+                  id
+                  album {
+                      id
+                  }
+              }
+            }
         }
     }
   }`;

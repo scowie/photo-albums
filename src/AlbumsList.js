@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { API, graphqlOperation } from "aws-amplify";
-import { List, Segment, Button, Input, Icon } from "semantic-ui-react";
+import { List, Segment, Button, Input, Icon, Label } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import {
   SortableContainer,
@@ -30,12 +30,33 @@ const DragHandle = SortableHandle(() => (
   </div>
 ));
 
-const SortableItem = SortableElement(({ album }) => (
+const SortableItem = SortableElement(({ album, albumIndex }) => (
   <List.Item key={`album-${album.id}`}>
     <NavLink to={`/albums/${album.id}`}>
       <Segment className="album-segment">
         <DragHandle />
-        <div className={"album-segment__main-content"}>{album.name}</div>
+        <div className={"album-segment__main-content"}>
+          
+          <span className="pm-label">{album.name}</span>
+          
+
+          <div className="pm-album-segment__right">
+            {!album.isVisible && <Label>
+              <Icon name="eye slash outline" /> hidden
+            </Label>}
+            {album.isVisible && <Label>
+              <Icon color="green" name="eye" /> visible
+            </Label>}
+            <Label>
+              <Icon name="images outline" />{" "}
+              {album.photos ? album.photos.items.length : "0"}
+            </Label>
+            <Label>
+              <Icon name="sort numeric down" />{" "}
+              {albumIndex + 1}
+            </Label>
+          </div>
+        </div>
       </Segment>
     </NavLink>
   </List.Item>
@@ -49,6 +70,7 @@ const SortableList = SortableContainer(({ albums }) => {
           key={`album-${album.sortPosition}`}
           index={index}
           album={album}
+          albumIndex={index}
         />
       ))}
     </List>
@@ -126,10 +148,11 @@ class AlbumsList extends Component {
     return result;
   };
 
-  sortAlbums = () =>
+  sortAlbums = () => {
     this.setState({
       albums: this.props.albums.sort(makeComparator("sortPosition"))
     });
+  };
 
   componentDidMount() {
     this.sortAlbums();
@@ -137,6 +160,7 @@ class AlbumsList extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.albums !== this.props.albums) {
+      debugger;
       this.setState({
         albums: this.props.albums.sort(makeComparator("sortPosition"))
       });
