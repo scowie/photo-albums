@@ -280,6 +280,8 @@ class AlbumDetails extends Component {
       this.setState({
         saveInProgress: false,
         sidebarVisible: !this.state.sidebarVisible
+      }, () => {
+        window.scrollTo(0, 0)
       });
       return result;
     });
@@ -291,40 +293,40 @@ class AlbumDetails extends Component {
     this.setState({ albumPhotos: updatedPhotos });
   };
 
-  handleSaveAlbumPhotoSortPositionsClick = async () => {
-    return await Promise.all(
-      this.state.albumPhotos.map(async (photo, index) => {
-        return await this.savePhotoChanges(photo);
-      })
-    );
-  };
+  // handleSaveAlbumPhotoSortPositionsClick = async () => {
+  //   return await Promise.all(
+  //     this.state.albumPhotos.map(async (photo, index) => {
+  //       return await this.savePhotoChanges(photo);
+  //     })
+  //   );
+  // };
 
-  savePhotoChanges = async photo => {
-    const UpdatePhoto = `mutation UpdatePhoto($id: ID!, $sortPosition: Int, $title: String, $description: String, $isVisible: Boolean) {
-        updatePhoto(input: {id: $id, sortPosition: $sortPosition, title: $title, description: $description, isVisible: $isVisible}) {
-          id
-          sortPosition
-          title
-          description
-          isVisible
-        }
-      }`;
+  // savePhotoChanges = async photo => {
+  //   const UpdatePhoto = `mutation UpdatePhoto($id: ID!, $sortPosition: Int, $title: String, $description: String, $isVisible: Boolean) {
+  //       updatePhoto(input: {id: $id, sortPosition: $sortPosition, title: $title, description: $description, isVisible: $isVisible}) {
+  //         id
+  //         sortPosition
+  //         title
+  //         description
+  //         isVisible
+  //       }
+  //     }`;
 
-    this.setState({ saveInProgress: true }, async () => {
-      const result = await API.graphql(
-        graphqlOperation(UpdatePhoto, {
-          id: photo.id,
-          sortPosition: photo.sortPosition,
-          title: photo.title,
-          description: photo.description,
-          isVisible: photo.isVisible
-        })
-      );
-      this.setState({ saveInProgress: false });
+  //   this.setState({ saveInProgress: true }, async () => {
+  //     const result = await API.graphql(
+  //       graphqlOperation(UpdatePhoto, {
+  //         id: photo.id,
+  //         sortPosition: photo.sortPosition,
+  //         title: photo.title,
+  //         description: photo.description,
+  //         isVisible: photo.isVisible
+  //       })
+  //     );
+  //     this.setState({ saveInProgress: false });
 
-      return result;
-    });
-  };
+  //     return result;
+  //   });
+  // };
 
   closeDeleteAlbumModal = () => {
     this.setState({ openDeleteAlbumModal: false });

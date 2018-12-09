@@ -45,6 +45,7 @@ class PhotoDetails extends Component {
         })
       );
       this.setState({ saveInProgress: false, sidebarVisible: !this.state.sidebarVisible });
+      window.scrollTo(0, 0)
       return result;
     });
   };
