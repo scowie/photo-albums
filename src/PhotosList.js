@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { NavLink } from "react-router-dom";
-import { Card, Icon, Image, Checkbox } from "semantic-ui-react";
+import { Card, Icon, Image, Checkbox, Label } from "semantic-ui-react";
 import { S3Image } from "aws-amplify-react";
 import {
   SortableContainer,
@@ -35,6 +35,8 @@ const SortableItem = SortableElement(({ photo, sortIndex, handleSelectionClick }
   <Card className="pm-thumbnail-photo-card" key={photo.thumbnailKey}>
   <Checkbox className="pm-photo-selection-checkbox" onClick={() => handleSelectionClick(photo.id)} />
     <DragHandle />
+
+
     <div className="pm-photo-sort-position">
       <span>{sortIndex + 1}</span>
     </div>
@@ -48,9 +50,16 @@ const SortableItem = SortableElement(({ photo, sortIndex, handleSelectionClick }
       <Card.Header>{photo.title}</Card.Header>
       <Card.Meta />
       <Card.Description>{photo.description}</Card.Description>
+      {photo.deviceMake}&nbsp;{photo.deviceModel}
     </Card.Content>
     <Card.Content extra>
-      {photo.deviceMake}&nbsp;{photo.deviceModel}
+   
+          {!photo.isVisible && <Label className="pm-photo-visibility-label">
+              <Icon name="eye slash outline" /> hidden
+            </Label>}
+            {photo.isVisible && <Label className="pm-photo-visibility-label">
+              <Icon color="green" name="eye" /> visible
+            </Label>}
     </Card.Content>
   </Card>
 ));

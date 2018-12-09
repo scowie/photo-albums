@@ -25,8 +25,6 @@ function makeComparator(key, order = "asc") {
 }
 
 const DragHandle = SortableHandle(() => (
-  
-  
   <Popup
       trigger={<div className={"album-drag-handle"}><Icon disabled name={"bars"} /></div>}
       content='Drag to re-order'
@@ -34,26 +32,17 @@ const DragHandle = SortableHandle(() => (
       inverted
       className="pm-popover"
     />
-    
-
 ));
 
 const SortableItem = SortableElement(({ album, albumIndex }) => (
   <List.Item key={`album-${album.id}`}>
     <NavLink to={`/albums/${album.id}`}>
       <Segment className="album-segment">
-      {/* <Popup
-      trigger={<DragHandle />}
-      content='Drag to re-order'
-      size='mini'
-      inverted
-    /> */}
         <DragHandle />
         <div className={"album-segment__main-content"}>
           
           <span className="pm-label">{album.name}</span>
           
-
           <div className="pm-album-segment__right">
             {!album.isVisible && <Label>
               <Icon name="eye slash outline" /> hidden

@@ -306,3 +306,7 @@ div.checkbox.pm-photo-selection-checkbox {
 .pm-popover {
   opacity:0.7;
 }
+
+.pm-photo-visibility-label {
+  z-index:3;
+}
