@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { API, graphqlOperation } from "aws-amplify";
-import { List, Segment, Button, Input, Icon, Label } from "semantic-ui-react";
+import { List, Segment, Button, Input, Icon, Label, Popup } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import {
   SortableContainer,
@@ -25,15 +25,29 @@ function makeComparator(key, order = "asc") {
 }
 
 const DragHandle = SortableHandle(() => (
-  <div className={"album-drag-handle"}>
-    <Icon disabled name={"bars"} />
-  </div>
+  
+  
+  <Popup
+      trigger={<div className={"album-drag-handle"}><Icon disabled name={"bars"} /></div>}
+      content='Drag to re-order'
+      size='mini'
+      inverted
+      className="pm-popover"
+    />
+    
+
 ));
 
 const SortableItem = SortableElement(({ album, albumIndex }) => (
   <List.Item key={`album-${album.id}`}>
     <NavLink to={`/albums/${album.id}`}>
       <Segment className="album-segment">
+      {/* <Popup
+      trigger={<DragHandle />}
+      content='Drag to re-order'
+      size='mini'
+      inverted
+    /> */}
         <DragHandle />
         <div className={"album-segment__main-content"}>
           

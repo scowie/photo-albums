@@ -299,12 +299,10 @@ div.checkbox.pm-photo-selection-checkbox {
   position:relative;
 }
 
-.pm-icon-text-group > div {
-  position:absolute;
-  top:2px;
-  border:1px solid green;
-}
-
 .pm-label {
   font-weight:500;
+}
+
+.pm-popover {
+  opacity:0.7;
 }
