@@ -70,7 +70,7 @@ const SortableList = SortableContainer(({ albums }) => {
     <List>
       {albums.map((album, index) => (
         <SortableItem
-          key={`album-${album.sortPosition}`}
+          key={`album-${album.id}`}
           index={index}
           album={album}
           albumIndex={index}
